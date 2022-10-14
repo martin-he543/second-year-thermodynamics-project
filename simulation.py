@@ -1,3 +1,12 @@
+"""
+SIMULATION MODULE       Martin A. He
+----------------------------------------------------------
+A module for the simulation of 
+->
+->
+
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -10,7 +19,8 @@ import event as ev
 
 class Simulation():
     """
-    CLASS: Simulation
+    SIMULATION CLASS
+    ________
     Simulates rigid collisions in 2D within a circular container.
 
     Attributes:  MUST CHANGE
@@ -74,6 +84,7 @@ class Simulation():
     def N_ball(self):
         """
         METHOD: N_ball
+        ________
         Returns:
             (int): the number of balls in the container.
         """
@@ -82,6 +93,7 @@ class Simulation():
     def pressure(self):
         """
         METHOD: pressure
+        ________
         Gives pressure values for every __ container collisions.
 
         Returns:
@@ -91,6 +103,7 @@ class Simulation():
     def temperature(self):
         """
         METHOD: temperature
+        ________
         Gives temperature at all collision times.
         
         Returns:
@@ -100,6 +113,7 @@ class Simulation():
     def average_temperature(self):
         """
         METHOD: average_temperature
+        ________
         Gives the average temperature of 
         
         Returns:
@@ -109,6 +123,7 @@ class Simulation():
     def kinetic_energy(self):
         """
         METHOD: kinetic_energy
+        ________
         Gives total kinetic energy of the system for all collisions.
         
         Returns:
@@ -118,6 +133,7 @@ class Simulation():
     def speed(self):
         """
         METHOD: speed
+        ________
         Gives all speeds for all balls for all collisions.
         
         Returns:
