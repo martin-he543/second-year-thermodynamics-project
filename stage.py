@@ -1,6 +1,5 @@
 import pylab as pl
-import simulation as sim
-
+# import simulation as sim
 
 f = pl.figure()
 patch1 = pl.Circle([0., 0.], 4, fc='r')
