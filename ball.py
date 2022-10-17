@@ -1,7 +1,7 @@
 """
 BALL MODULE       Martin A. He
 ----------------------------------------------------------
-A module for the simulation of a bouncing ball. 
+A module for defining the properties of a bouncing ball.
 ->
 ->
 
@@ -18,6 +18,10 @@ class Ball:
         pos_ball=np.array(),
         vel_ball=np.array(),
     ):
+        self.__m_ball = m_ball
+        self.__r_ball = r_ball
+        self.__pos_ball = pos_ball
+        self.__vel_ball = vel_ball
         return
 
     def pos(self):
@@ -26,6 +30,7 @@ class Ball:
         RETURNS 
             (np.ndarray w/ float values): the current position of the centre of the ball.
         """
+        return self.__pos_ball
 
     def vel(self):
         """
@@ -33,20 +38,19 @@ class Ball:
         RETURNS
             (np.ndarray w/ float values): the current 2D velocity of the ball.
         """
+        return self.__vel_ball
 
     def move(self,dt):
         """
         Move the ball to a new position: r' = r + v * dt.
-        RETURNS
-
         """
+        self.__pos_ball = self.__pos_ball + (self.__vel_ball * dt)
 
     def time_to_collision(self,other):
         """
         Calculate the time until the next collision between this ball and another one, or the container.
-        RETURNS
-            
         """
+        
 
     def collide(self,other):
         """
