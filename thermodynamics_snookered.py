@@ -10,46 +10,47 @@ titleFont = {'fontname':'SF Mono','size':13}
 axesFont = {'fontname':'SF Mono','size':9}
 ticksFont = {'fontname':'SF Mono','size':7}
 errorStyle = {'mew':1,'ms':3,'capsize':3,'color':'blue','ls':''}
-lineStyle = {'linewidth':1}
+lineStyle = {'linewidth'
+             :1}
 
 radiusContainer = 10
 xMin, xMax, yMin, yMax = -radiusContainer, radiusContainer, -radiusContainer, radiusContainer
 
 # #%% ========================= BALL CLASS FILE ==============================
 # Class for the "ball.py" file.
-class Ball:
-    def _init_( 
-        # Initialises the existence of the ball.
-        self, m_ball=1, r_ball=1,
-        pos_ball = np.array(),
-        vel_ball = np.array(),
-    ):
-        self.__m_ball = m_ball
-        self.__r_ball = r_ball
-        self.__pos_ball = pos_ball
-        self.__vel_ball = vel_ball
-        return
+# class Ball:
+#     def _init_( 
+#         # Initialises the existence of the ball.
+#         self, m_ball=1, r_ball=1,
+#         pos_ball = np.array(),
+#         vel_ball = np.array(),
+#     ):
+#         self.__m_ball = m_ball
+#         self.__r_ball = r_ball
+#         self.__pos_ball = pos_ball
+#         self.__vel_ball = vel_ball
+#         return
 
-    def pos(self): 
-        # Returns the current position of the centre of the ball.
-        return self.__pos_ball
+#     def pos(self): 
+#         # Returns the current position of the centre of the ball.
+#         return self.__pos_ball
 
-    def vel(self): 
-        # Returns the current velocity of the ball.
-        return self.__vel_ball
+#     def vel(self): 
+#         # Returns the current velocity of the ball.
+#         return self.__vel_ball
 
-    def move(self,dt): 
-        # Moves the ball to a new position r' = r + v * dt
-        self._pos_ball = self.pos_ball + (self._vel_ball * dt)
-        return
+#     def move(self,dt): 
+#         # Moves the ball to a new position r' = r + v * dt
+#         self._pos_ball = self.pos_ball + (self._vel_ball * dt)
+#         return
 
-    def time_to_collision(self,other): 
-        # Calculates the time until the next collision between this ball and another one, or the container.
-        return
+#     def time_to_collision(self,other): 
+#         # Calculates the time until the next collision between this ball and another one, or the container.
+#         return
         
-    def collide(self,other): 
-        # Makes the changes to the velocities of the ball and the other due to a collision.
-        return
+#     def collide(self,other): 
+#         # Makes the changes to the velocities of the ball and the other due to a collision.
+#         return
 
 #%% ========================= STAGE CLASS FILE ==============================
 # Class for the "stage.py" file.
