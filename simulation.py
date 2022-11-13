@@ -1,7 +1,7 @@
 """
 SIMULATION MODULE       Martin A. He
 ----------------------------------------------------------
-A module for
+A module for the simulation of the ball.
 ->
 ->
 
