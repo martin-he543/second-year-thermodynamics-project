@@ -1,11 +1,3 @@
-"""
-SIMULATION MODULE       Martin A. He
-----------------------------------------------------------
-A module for the simulation of the ball.
-->
-->
-
-"""
 import numpy as np
 import ball as bl
 import matplotlib.pyplot as plt
@@ -32,7 +24,7 @@ class Simulation:
         self.__r_container=r_container
         return
 
-    def next_collision(self):
+    def next_collision(self,ball,time):
         """
         Sets up and performs the next collision.
 
@@ -41,5 +33,5 @@ class Simulation:
         - move the system to that point in time
         - perform the collision
         """
-
-        return
+        ball=bl.Ball(1,2,[3,4],[5,6])
+        return ball.collide()
