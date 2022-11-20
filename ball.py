@@ -5,15 +5,15 @@ class Ball:
     time = 0
     def __init__(
         self,
-        m_ball=1,
-        r_ball=1,
-        pos_ball=np.array([0.0,0.0]),
-        vel_ball=np.array([0.0,0.0]),
-        n_collision=0,
-        count=0,
+        mass = 1,
+        radius = 1,
+        pos_ball = np.array([0.0,0.0]),
+        vel_ball = np.array([0.0,0.0]),
+        n_collision = 0,
+        count = 0,
     ):
-        self._m_ball = m_ball
-        self._r_ball = r_ball
+        self._mass = mass
+        self._radius = radius
         self._pos_ball = pos_ball
         self._vel_ball = vel_ball
         self._n_collision = n_collision
@@ -24,9 +24,9 @@ class Ball:
     ### BALL INFORMATION METHODS
     
     def __repr__(self):
-        return ("Ball properties: mass = {self._m_ball}, radius = {self._r_ball}, position = {self._pos_ball}, velocity = {self._vel_ball}")
+        return ("Ball properties: mass = {self._mass}, radius = {self._radius}, position = {self._pos_ball}, velocity = {self._vel_ball}")
     def __str__(self):
-        return ("Ball: m = {self._m_ball}; r = {self._r_ball}; x = {self._pos_ball}; v = {self._vel_ball}")
+        return ("Ball: m = {self._mass}; r = {self._radius}; x = {self._pos_ball}; v = {self._vel_ball}")
 
     ### BALL MOVEMENT METHODS
     
@@ -35,6 +35,22 @@ class Ball:
         Calculate the time until the next collision between this ball and another one, or the container.
         RETURNS
             time (float): the time to the next collision for a ball.
+            
+        VARIABLES
+            R: distance between centre of ball, and centre of other object during collision.
+            a, b, c: terms in the quadratic equation for calculation of dt.
+            discrim: calculation of the discriminant for dt.
+            
+        CLASSIFICATION OF SOLUTIONS TO dt
+        -> No solution exists for Δ < 0.
+        -> A unique solution exists for Δ = 0.
+            - If the value of dt > 0, dt is a valid solution.
+            - If the value of dt <= 0, dt does not exist.
+        -> Two unique solutions exist for Δ > 0.
+            - If both dt values are > 0, then the next collision is the smallest of the two.
+            - If both dt values are <= 0, dt does not exist.
+            - If dt_1 <= 0, but dt_2 > 0, return dt_2.
+            - If dt_2 <= 0, but dt_1 > 0, return dt_1.
         """
         r = self._pos_ball - other._pos_ball
         v = self._vel_ball - other._vel_ball
@@ -47,9 +63,9 @@ class Ball:
             return np.inf
         else:
             if isinstance(other,Container):
-                R = self._r_ball - other._r_ball
+                R = self._radius - other._radius
             else:
-                R = self._r_ball + other._r_ball
+                R = self._radius + other._radius
             c = np.dot(r,r) - R**2
             
             if not isinstance(other,Container):
@@ -105,17 +121,16 @@ class Ball:
             v1_per = u1_per
             self.set_vel(v1_par + v1_per)
             other.set_vel(np.zeros(2))
-            self.count += 1
-            other.count += 1
+            self.count, other.count += 1, 1
             
             vel_f = self._vel_ball
             vel_i = self._vel_ball
             dv = vel_f - vel_i
-            self._dp = dv * self._m_ball
+            self._dp = dv * self._mass
             
         # Consider collisions with another ball.
         else:
-            m1,m2 = self._m_ball, other._m_ball
+            m1,m2 = self._mass, other._mass
             
             u2_par,u2_per = np.vdot(other._vel_ball, r) / np.dot(r,r) * r, other._v_ball - u2_par
             u1_par_translated = u1_par - u2_par
@@ -123,12 +138,10 @@ class Ball:
             
             v1_par = v1_par_translated + u2_par
             v2_par = u1_par - u2_par + v1_par
-            v1_per = u1_per
-            v2_per = u2_per
+            v1_per, v2_per = u1_per, u2_per
             self.set_vel(v1_par + v1_per)
             other.set_vel(v2_par + v2_per)
-            self._count += 1
-            other._count += 1
+            self._count, other._count += 1, 1
             
     def move(self,dt):
         """
@@ -143,17 +156,17 @@ class Ball:
         """
         Return the mass of the ball.
         RETURNS
-            mass (float): The mass of the ball.
+            mass (float): the mass of the ball.
         """
-        return self._m_ball
+        return self._mass
     
     def radius(self):
         """
         Return the radius of the ball.
         RETURNS
-            radius (float): The radius of the ball.
+            radius (float): the radius of the ball.
         """
-        return self._r_ball
+        return self._radius
     
     def pos(self):
         """
@@ -177,7 +190,7 @@ class Ball:
         PARAMETERS
             mass (float): the new defined mass of the ball.
         """
-        self._m_ball = mass
+        self._mass = mass
     
     def set_radius(self,radius):
         """
@@ -185,7 +198,7 @@ class Ball:
         PARAMETERS
             radius (float): the new defined radius of the ball.
         """
-        self._r_ball = radius
+        self._radius = radius
         
     def set_pos(self, pos):
         """
@@ -214,15 +227,15 @@ class Ball:
         """
         return deepcopy(self)
 
-
+# Inherit the ball class for the container class.
 class Container(Ball):
     """
     This is a Container class. The container is used to enclose the balls in
     the 2D rigid disc collision.
 
     PARAMETERS
-        radius (float): The radius of the container.
-        mass (float): The mass of the container.
+        radius (float): the radius of the container.
+        mass (float): the mass of the container.
     """
 
     def __init__(self, radius=10, mass=100):
