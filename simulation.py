@@ -6,7 +6,7 @@ class Event(tuple):
     """
     A tuple of 5 elements (ball_A, ball_B, count_A, count_B, dt).
 
-    Parameters:
+    PARAMETERS
         ball_A (int): The first ball in impending collision.
         ball_B (int): The second ball in impending collision.
         count_A (int): The number of collisions the first ball 
@@ -18,21 +18,21 @@ class Event(tuple):
 
     def ball_A(self):
         """
-        Returns:
+        RETURNS
             (int): The index of first ball in impending collision.
         """
         return self[0]
 
     def ball_B(self):
         """
-        Returns:
+        RETURNS
             (int): The index of second ball in impending collision.
         """
         return self[1]
 
     def count_A(self):
         """
-        Returns:
+        RETURNS
             (int): The number of collisions the first ball 
                 encountered prior to this impending collision calculation.
         """
@@ -40,7 +40,7 @@ class Event(tuple):
 
     def count_B(self):
         """
-        Returns:
+        RETURNS
             (int): The number of collisions the second ball 
                 encountered prior to this impending collision calculation.
         """
@@ -48,14 +48,14 @@ class Event(tuple):
 
     def dt(self):
         """
-        Returns:
+        RETURNS
             (float): The global time this collision will happen on.
         """
         return self[4]
 
     def pair(self):
         """
-        Returns:
+        RETURNS
             (list of int): A list of the two balls/ ball and container
                 involved in collision.
         """
@@ -67,7 +67,7 @@ class Simulation:
     SIMULATION CLASS
     Simulates the movement of hard spherical gas particles in a circular container.
 
-    ATTRIBUTES
+    PARAMETERS
     - N_balls: the number of balls to simulate
     - r_balls: the radius of balls in the simulation
     - r_container: the radius of the container
@@ -80,9 +80,9 @@ class Simulation:
         m_balls=1,
         r_container=10
     ):
-        self.__N_balls=N_balls
-        self.__r_balls=r_balls
-        self.__r_container=r_container
+        self._N_balls=N_balls
+        self._r_balls=r_balls
+        self._r_container=r_container
         self._ball=[]
         self._temperature=[]
         self._KE=[]
@@ -118,12 +118,16 @@ class Simulation:
     
     def N_ball(self):
         """
-        Returns:
+        RETURNS
             (int): Number of balls in container.
         """
         return self._N_ball
     
     def ball(self):
+        """
+        RETURNS
+            (list): A list of all the active balls in the simulation.
+        """
         return self._ball
     
     def container(self):
@@ -160,4 +164,15 @@ class Simulation:
     
     ### SIMULATION OTHER METHODS
     
-    
+    def run(
+        self,
+        collisions = 10,
+        time = 0.001
+    ):
+        """
+        Runs the 2D simulation of colliding particles within the container.
+        
+        Arguments:
+                collisions (int, optional): Number of collisions in the simulation.
+                
+        """
