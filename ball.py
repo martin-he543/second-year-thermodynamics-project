@@ -108,18 +108,18 @@ class Ball:
         PARAMETERS
             other (Ball): the other ball which collides with this one.
         """
-        # Transform the velocity to C.O.M. frame.
+        # Transform the positions relative to each other.
         r = self._pos_ball - other._pos_ball
         
-        # Resolve the velocity into // and |_ to line of centres.
-        u1_par = np.vdot(self._vel_ball, r) / np.dot(r,r) * r
-        u1_per = self._vel_ball - u1_par
+        # Resolve the velocity into // and |_ to the line of centres.
+        u_self_par = np.vdot(self._vel_ball, r) / np.dot(r,r) * r
+        u_self_per = self._vel_ball - u_self_par
         
         # Consider collisions with the container.
         if isinstance(other,Container):
-            v1_par,v2_par = -u1_par, np.zeros(2)
-            v1_per = u1_per
-            self.set_vel(v1_par + v1_per)
+            v_self_par,v_other_par = -u_self_par, np.zeros(2)
+            v_self_per = u_self_per
+            self.set_vel(v_self_par + v_self_per)
             other.set_vel(np.zeros(2))
             self.count, other.count += 1, 1
             
@@ -132,15 +132,16 @@ class Ball:
         else:
             m1,m2 = self._mass, other._mass
             
-            u2_par,u2_per = np.vdot(other._vel_ball, r) / np.dot(r,r) * r, other._v_ball - u2_par
-            u1_par_translated = u1_par - u2_par
-            v1_par_translated = (m1 - m2)/(m1 + m2) * u1_par_translated
+            # Only care about parallel components in 1D. Consider relative velocities.
+            u_other_par,u_other_per = np.vdot(other._vel_ball, r) / np.dot(r,r) * r, other._v_ball - u_other_par
+            u_self_par_relative = u_self_par - u_other_par
+            v_self_par_relative = (m1 - m2)/(m1 + m2) * u_self_par_relative
             
-            v1_par = v1_par_translated + u2_par
-            v2_par = u1_par - u2_par + v1_par
-            v1_per, v2_per = u1_per, u2_per
-            self.set_vel(v1_par + v1_per)
-            other.set_vel(v2_par + v2_per)
+            v_self_par = v_self_par_relative + u_other_par
+            v_other_par = u_self_par - u_other_par + v_self_par
+            v_self_per, v_other_per = u_self_per, u_other_per
+            self.set_vel(v_self_par + v_self_per)
+            other.set_vel(v_other_par + v_other_per)
             self._count, other._count += 1, 1
             
     def move(self,dt):

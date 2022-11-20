@@ -5,6 +5,7 @@ import pandas as pd
 import itertools as it
 import heapdict as hd
 import time as tm
+import random
 
 class Simulation:
     """
@@ -25,6 +26,7 @@ class Simulation:
         r_container = 10,                   # The radius of the container.
         
         random_position = True,             # Randomly-positioned balls.
+        random_speed_range = 5              # Range for random speed generation.
     ):
         self._N_balls = N_balls             # The number of container balls.
         self._r_balls = r_balls             # The radius of the container balls.
@@ -39,6 +41,7 @@ class Simulation:
         self._distance_relative = []        # Relative distance between balls.
         self._pairs = self.pair_combi()     # Lists all pair combinations of balls.
         self._random_position = random_position     # Sets random positioning.
+        self._random_speed = random_speed_range     # Sets random speed range.
         
         self._brownian = []                 # Brownian motion investigation data.
 
@@ -182,6 +185,116 @@ class Simulation:
         """
         return self._dataset
     
+    ### SIMULATION RANDOMISATION METHODS
+    
+    def gen_random_positions(self, start=0):
+        """
+        Generates the non-overlapping random ball positions.
+        
+        PARAMETERS
+            start (boolean, optional):
+        RAISES
+            Exception:
+                Balls cannot fit in this container. Please reduce N_balls or increase r_container to proceed.
+        """
+        def gen_random_uniform(maximum_range):
+            """
+            Provides a uniform distribution centered at (0,0), generating random floats.
+            PARAMETERS
+                maximum_range (float): sets the maximum range for the distribution.
+            RETURNS
+                (float): a random float between [-max_range, max_range].
+            """
+            return random.uniform(-maximum_range,maximum_range)
+        
+        for i in range(start, self._N_balls):
+            position, error_count = np.zeros(2), 0
+            
+            while True:
+                # Extreme case error handling to prevent computational overload.
+                if error_count > 1e5:
+                    raise Exception \
+                        ("The area of this container is too small for ball size.")
+                x = gen_random_uniform(self._r_container - self._ball[i]._radius)
+                y = gen_random_uniform(self._r_container - self._ball[i].radius)
+                # Check if the randomly-assigned position is valid.
+                while(np.sqrt(x**2 + y**2) >= self._r_container - self._ball[i]._radius):
+                    x = gen_random_uniform(self._r_container - self._ball[i]._radius)
+                    y = gen_random_uniform(self._r_container - self._ball[i].radius)
+                position = np.array([x,y])
+                append = False
+                
+                for j in range(0, i):
+                    distance = np.sqrt((self._ball[j]._pos_ball[0] - position[0])**2 \
+                        + (self._ball[j]._pos_ball[1] - position[1]**2))
+                    if distance <= self._ball[i].radius + self._ball[j]._radius:
+                        append = False
+                        error_count += 1
+                        break
+                    else: append = True
+                if append or i == 0: break
+            self.ball[i].set_pos(position)
+
+    ### SIMULATION BROWNIAN MOTION INVESTIGATION
+    
+    def brownian_init(self, radius = 5, mass = 10):
+        """
+        Initialisation of Brownian motion investigation, ball 0.
+        -> Position of ball 0 is initialised to (0,0).
+        -> Remaining balls are randomly distributed in the container.
+        PARAMETERS
+            radius (float, optional): radius of ball being investigated.
+            mass (float, optional): mass of ball being investigated.
+        """
+        self._ball[0].set_pos(np.array([0.0,0.0]))
+        self._ball[0].set_radius(radius)
+        self._ball[0].set_mass(mass)
+        self.gen_random_positions(start = 1)
+
+    def set_ball_vel(self, velocity_list):
+        """
+        Sets the velocity of all the balls from a list of velocities.
+        PARAMETERS
+            velocity_list (list of (np.ndarray of (floats))): lists all the ball velocities in their x- and y- directions.
+        """
+        for i, velocity in enumerate(velocity_list):
+            self._ball[i].set_vel(velocity)
+
+    def brownian_velocities(self, maximum_speed):
+        """
+        Generates and assigns random velocities to all balls from a uniform random distribution of x, and y-components of velocity.
+        PARAMETERS
+            maximum_speed (float): the range to generate velocities from.
+        """
+                
+        def gen_random_velocities(N_balls, maximum_speed_range):
+            """
+            Generates random velocities from ma uniform distribution for a given number of balls in the range of [-maximum_speed_range, maximum_speed_range].
+            PARAMETERS
+                N_balls (int): the number of balls.
+                random_speed_range(float): the ± range in the x, and y-components.
+            RETURNS
+            """
+            def gen_random_uniform(maximum_range):
+                """
+                Provides a uniform distribution centered at (0,0), generating random floats.
+                PARAMETERS
+                    maximum_range (float): sets the maximum range for the distribution.
+                RETURNS
+                    (float): a random float between [-max_range, max_range].
+                """
+                return random.uniform(-maximum_range,maximum_range)
+            
+            list = []
+            for _ in range(N_balls):
+                list.append(np.array(gen_random_uniform(maximum_speed_range),\
+                    gen_random_uniform(maximum_speed_range)))
+            return list
+                    
+        list = gen_random_velocities(self._N_balls, self._random_speed)
+        self.set_ball_vel(list)
+
+        
     ### SIMULATION OTHER METHODS
     
     ### SIMULATION RUN METHODS
@@ -207,18 +320,18 @@ class Simulation:
         Runs the 2D simulation of colliding particles within the container.
         
         PARAMETERS
-            collisions (int, optional): number of collisions in the simulation.
-            time (float, optional): time period (s) between animation frames.
+        -> collisions (int, optional): number of collisions in the simulation.
+        -> time (float, optional): time period (s) between animation frames.
             
-            pressure (boolean, optional): records pressure for every __ collisions with the wall of the container.
-            temperature (boolean, optional): records temperature.
-            KE (boolean, optional): records the system KE for every collision.
-            speed (boolean, optional): records speed of all balls in all collisions.
-            brownian (boolean, optional): records data for Brownian motion.
-            dataset (boolean, optional): records dataset of simulation information.
-            distance_centre (boolean, optional): records the distances of all balls from the origin, in all collisions.
-            distance_relative (boolean, optional): records the relative distances between all the balls, in all collisions.
-            progress_bar (boolean, optional): displays a progress bar.
+        -> pressure (boolean, optional): records pressure for every __ collisions with the wall of the container.
+        -> temperature (boolean, optional): records temperature.
+        -> KE (boolean, optional): records the system KE for every collision.
+        -> speed (boolean, optional): records speed of all balls in all collisions.
+        -> brownian (boolean, optional): records data for Brownian motion.
+        -> dataset (boolean, optional): records dataset of simulation information.
+        -> distance_centre (boolean, optional): records the distances of all balls from the origin, in all collisions.
+        -> distance_relative (boolean, optional): records the relative distances between all the balls, in all collisions.
+        -> progress_bar (boolean, optional): displays a progress bar.
             
         RETURNS
         
