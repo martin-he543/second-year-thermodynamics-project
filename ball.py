@@ -1,3 +1,9 @@
+"""
+BALL MODULE (import ball as bl)
+Created by Martin A. He, 2022.11.20
+For the simulation of elastic collisions of balls with others, and container.
+"""
+
 import numpy as np
 from copy import deepcopy
 

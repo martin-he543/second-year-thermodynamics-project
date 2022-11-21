@@ -5,7 +5,6 @@ import pandas as pd
 import itertools as it
 import heapdict as hd
 import time as tm
-import random
 
 class Simulation:
     """
@@ -51,6 +50,7 @@ class Simulation:
             print("Random positioning enabled.")
 
     ### SIMULATION INFORMATION METHODS
+    # Gives all the simulation methods for returning information on the Simulation.
     
     def __repr__(self):
         return ("Simulation properties: N = {self._N_ball} balls, r_ball = {self._r_ball}, m_ball = {self._m_ball}, r_container = {self._r_container}")
@@ -58,6 +58,7 @@ class Simulation:
         return ("Simulation: N = {self._N_ball} balls, r_ball = {self._r_ball, m_ball = {self._m_ball}, r_container = {self._r_container}")
     
     ### SIMULATION MOVEMENT METHODS
+    # Gives all the simulation methods for defining movement of balls.
     
     def next_collision(self,ball,time):
         """
@@ -70,6 +71,7 @@ class Simulation:
         """
 
     ### SIMULATION ATTRIBUTE METHODS
+    # Gives all the simulation methods about certain attributes.
     
     def N_ball(self):
         """
@@ -96,6 +98,7 @@ class Simulation:
         return self._container
     
     ### SIMULATION PROPERTY METHODS
+    # Gives all the simulation methods about properties of the system.
     
     def pressure(self):
         """
@@ -186,6 +189,7 @@ class Simulation:
         return self._dataset
     
     ### SIMULATION RANDOMISATION METHODS
+    # Gives all the randomisation methods for the simulation.
     
     def gen_random_positions(self, start=0):
         """
@@ -205,7 +209,7 @@ class Simulation:
             RETURNS
                 (float): a random float between [-max_range, max_range].
             """
-            return random.uniform(-maximum_range,maximum_range)
+            return np.random.uniform(-maximum_range,maximum_range)
         
         for i in range(start, self._N_balls):
             position, error_count = np.zeros(2), 0
@@ -236,6 +240,7 @@ class Simulation:
             self.ball[i].set_pos(position)
 
     ### SIMULATION BROWNIAN MOTION INVESTIGATION
+    # Gives all the methods for the Brownian Motion investigation.
     
     def brownian_init(self, radius = 5, mass = 10):
         """
@@ -251,13 +256,13 @@ class Simulation:
         self._ball[0].set_mass(mass)
         self.gen_random_positions(start = 1)
 
-    def set_ball_vel(self, velocity_list):
+    def set_ball_velocities(self, velocity_list):
         """
         Sets the velocity of all the balls from a list of velocities.
         PARAMETERS
             velocity_list (list of (np.ndarray of (floats))): lists all the ball velocities in their x- and y- directions.
         """
-        for i, velocity in enumerate(velocity_list):
+        for i, velocity in np.ndenumerate(velocity_list):
             self._ball[i].set_vel(velocity)
 
     def brownian_velocities(self, maximum_speed):
@@ -283,7 +288,7 @@ class Simulation:
                 RETURNS
                     (float): a random float between [-max_range, max_range].
                 """
-                return random.uniform(-maximum_range,maximum_range)
+                return np.random.uniform(-maximum_range,maximum_range)
             
             list = []
             for _ in range(N_balls):
@@ -292,9 +297,38 @@ class Simulation:
             return list
                     
         list = gen_random_velocities(self._N_balls, self._random_speed)
-        self.set_ball_vel(list)
+        self.set_ball_velocities(list)
 
+    ### SIMULATION DISPLAY METHODS
+    # Gives all the links with Pylab and Matplotlib.
+
+    def patch_init(self):
+        """
+        Initialisation of the ball and container patches as part of the animation. The balls and container are drawn using plt.pyplot.Circle objects.
+        """
+        # Creates a list of containing all ball patches.
+        ball_patches = []
+        position_container = self._container._pos_ball
+        r_container = self._r_container
+        container_outline = plt.Circle(position_container,r_container, ec="b", fill=False, ls="solid")
         
+        for i, ball in np.ndenumerate(self._ball): ## Change to enumerate() if fail.
+            pos_ball, radius_ball = ball._pos_ball, ball._radius
+            
+            if i != 0:
+                ball_patches.append(\
+                    plt.Circle(pos_ball, radius_ball, ec="black", fc=tuple(np.random.rand(),np.random.rand(),np.random.rand())))
+            else: # Set the first ball to yellow - change later.
+                ball_patches.append(\
+                    plt.Circle(pos_ball, radius_ball, ec="black", fc=tuple(np.random.rand(),np.random.rand(),np.random.rand())))
+        self._ball_patches = ball_patches
+        self._container_outline = container_outline
+        
+    def draw(self):
+        """
+        Draw the current static simulation state.
+        """
+    
     ### SIMULATION OTHER METHODS
     
     ### SIMULATION RUN METHODS
