@@ -38,7 +38,7 @@ class Simulation:
         
         self._distance_centre = []          # Ball distance from origin.
         self._distance_relative = []        # Relative distance between balls.
-        self._pairs = self.pair_combi()     # Lists all pair combinations of balls.
+        self._pairs = self.pair_combn()     # Lists all pair combinations of balls.
         self._random_position = random_position     # Sets random positioning.
         self._random_speed = random_speed_range     # Sets random speed range.
         
@@ -70,6 +70,18 @@ class Simulation:
         - Perform the collision
         """
 
+    def init_collision_time(self):
+        """
+        Initialise the next collision time calculations from the first timestep.
+        Calculate all possible ball pairs, and their impending collision times.
+        Collision times are recorded as "Event" objects (see Event).
+        All collision events are added
+        """
+        for pair in self._pairs:    # All possible combos of ball pairs.
+            ball_A, ball_B = self._ball[pair[0]], self._ball[pair[1]]
+            dt = ball_A.time_to_collision(ball_B)
+            
+        
     ### SIMULATION ATTRIBUTE METHODS
     # Gives all the simulation methods about certain attributes.
     
@@ -188,6 +200,20 @@ class Simulation:
         """
         return self._dataset
     
+    def pair_combn(self, container=False):
+        """
+        Provides a complete list of all possible combinations of ball pairs.
+        PARAMETERS
+            container (boolean, optional): include Container in pairs.
+        RETURNS
+            (list of (tuple of (int))): list containing all tuples of pairs.
+        """
+        if not container:
+            list_number = list(range(self._N_balls))
+        else:
+            list_number = list(range(self._N_balls + 1))
+        return list(it.combinations(list_number, 2))
+            
     ### SIMULATION RANDOMISATION METHODS
     # Gives all the randomisation methods for the simulation.
     
@@ -328,6 +354,18 @@ class Simulation:
         """
         Draw the current static simulation state.
         """
+        self.patch_init()
+        
+        plt.figure(num="Current Simulation State")
+        ax = plt.axes(
+            xlim=(-self._r_container, self._r_container),
+            ylim=(-self._r_container,self._r_container),
+            aspect="equal",
+        )
+        ax.add_patch(self._container_outline)
+        for patch in self._ball_patches:
+            ax.add_patch(patch)
+        plt.show()
     
     ### SIMULATION OTHER METHODS
     
