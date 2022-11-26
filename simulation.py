@@ -43,6 +43,8 @@ class Simulation:
         self._random_speed = random_speed_range     # Sets random speed range.
         
         self._brownian = []                 # Brownian motion investigation data.
+        self._pq = hd.heapdict()
+        self._container = bl.Container(radius=r_container)
 
         for _ in range(0, N_balls):
             self._ball.append(bl.Ball(radius=r_balls, mass=m_balls))
@@ -80,7 +82,14 @@ class Simulation:
         for pair in self._pairs:    # All possible combos of ball pairs.
             ball_A, ball_B = self._ball[pair[0]], self._ball[pair[1]]
             dt = ball_A.time_to_collision(ball_B)
-            
+            if dt != np.inf:    # Only considers possible collisions.
+                self._pq[Event((pair[0],pair[1],ball_A._count,ball_B._count,dt))] = dt
+        
+        for i, ball in np.ndenumerate(self._ball): # Change to enumerate if fails
+            dt = ball.time_to_collision(self._container)
+            if dt != np.inf:    # Only considers possible collisions.
+                 self._pq[Event((i,self._N_balls,ball_A._count,ball_B._count,dt))] = dt
+                
         
     ### SIMULATION ATTRIBUTE METHODS
     # Gives all the simulation methods about certain attributes.
