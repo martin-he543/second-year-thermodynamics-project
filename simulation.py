@@ -61,16 +61,6 @@ class Simulation:
     
     ### SIMULATION MOVEMENT METHODS
     # Gives all the simulation methods for defining movement of balls.
-    
-    def next_collision(self,ball,time):
-        """
-        Sets up and performs the next collision.
-
-        The logic of the next_collision method should be as follows:
-        - Find the time to the next collision
-        - Move the system to that point in time
-        - Perform the collision
-        """
 
     def init_collision_time(self):
         """
@@ -89,7 +79,16 @@ class Simulation:
             dt = ball.time_to_collision(self._container)
             if dt != np.inf:    # Only considers possible collisions.
                  self._pq[Event((i,self._N_balls,ball_A._count,ball_B._count,dt))] = dt
-                
+    
+    def collision_time(self):
+        """
+        Sets up and performs the next collision.
+
+        The logic of the next_collision method should be as follows:
+        - Find the time to the next collision
+        - Move the system to that point in time
+        - Perform the collision
+        """
         
     ### SIMULATION ATTRIBUTE METHODS
     # Gives all the simulation methods about certain attributes.
