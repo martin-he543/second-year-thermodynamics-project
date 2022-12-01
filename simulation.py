@@ -72,23 +72,39 @@ class Simulation:
         for pair in self._pairs:    # All possible combos of ball pairs.
             ball_A, ball_B = self._ball[pair[0]], self._ball[pair[1]]
             dt = ball_A.time_to_collision(ball_B)
-            if dt != np.inf:    # Only considers possible collisions.
+            if dt != np.nan:    # Only considers possible collisions.
                 self._pq[Event((pair[0],pair[1],ball_A._count,ball_B._count,dt))] = dt
         
         for i, ball in np.ndenumerate(self._ball): # Change to enumerate if fails
             dt = ball.time_to_collision(self._container)
-            if dt != np.inf:    # Only considers possible collisions.
+            if dt != np.nan:    # Only considers possible collisions.
                  self._pq[Event((i,self._N_balls,ball_A._count,ball_B._count,dt))] = dt
     
     def collision_time(self):
         """
-        Sets up and performs the next collision.
+        Calculates the next collision times for balls that've undergone collisions.
 
         The logic of the next_collision method should be as follows:
         - Find the time to the next collision
         - Move the system to that point in time
         - Perform the collision
         """
+
+        collisions = set()
+        for event in self._events:  # Events of the next collisions.
+            for collision in event.pair():
+                collisions.add(collision)
+
+        for element in collisions:  # Add collisions to the priority queue.
+            if element != self._N_balls:    # Calculating collisions with container.
+                dt = self._ball[element].time_to_collision(self._container)
+                if dt != np.nan:
+                    self._pq
+
+
+
+            
+
         
     ### SIMULATION ATTRIBUTE METHODS
     # Gives all the simulation methods about certain attributes.

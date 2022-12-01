@@ -66,7 +66,7 @@ class Ball:
         
         if a == 0:  
             # Both balls are stationary (w.r.t. each other).
-            return np.inf
+            return np.nan
         else:
             if isinstance(other,Container):
                 R = self._radius - other._radius
@@ -77,18 +77,18 @@ class Ball:
             if not isinstance(other,Container):
                 if np.abs(c) <= 10e-13:
                     # Encounters a floating point error - no collision.
-                    return np.inf
+                    return np.nan
                 
             discrim = b**2 - 4*a*c
             if discrim < 0: 
                 # Complex dt - no collision.
-                return np.inf
+                return np.nan
             elif discrim == 0:
                 # Repeated root
                 dt = -b/(2*a)
                 if dt <= 0:
                     # Negative dt - no collision.
-                    return np.inf
+                    return np.nan
                 else:
                     return dt
             elif discrim > 0: 
@@ -100,7 +100,7 @@ class Ball:
                     return np.amax(np.array([dt_1,dt_2]))
                 else:
                     if dt_1 <= 0 and dt_2 <= 0:
-                        return np.inf
+                        return np.nan
                     elif dt_1 > 0 and dt_2 > 0:
                         return np.amin(np.array([dt_1,dt_2]))
                     elif dt_1 < 0:
