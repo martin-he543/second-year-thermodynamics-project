@@ -43,8 +43,10 @@ class Simulation:
         self._random_speed = random_speed_range     # Sets random speed range.
         
         self._brownian = []                 # Brownian motion investigation data.
-        self._pq = hd.heapdict()
-        self._container = bl.Container(radius=r_container)
+        self._pq = hd.heapdict()            # Create the priority queue.
+        self._container = bl.Container(radius=r_container)  # Choose container.
+        self._global_time = 0               # Set a global time system.
+        self._min_dt = 0                    # Define minimum time to collision.
 
         for _ in range(0, N_balls):
             self._ball.append(bl.Ball(radius=r_balls, mass=m_balls))
@@ -72,12 +74,12 @@ class Simulation:
         for pair in self._pairs:    # All possible combos of ball pairs.
             ball_A, ball_B = self._ball[pair[0]], self._ball[pair[1]]
             dt = ball_A.time_to_collision(ball_B)
-            if dt != np.nan:    # Only considers possible collisions.
+            if dt != np.inf:    # Only considers possible collisions.
                 self._pq[Event((pair[0],pair[1],ball_A._count,ball_B._count,dt))] = dt
         
         for i, ball in np.ndenumerate(self._ball): # Change to enumerate if fails
             dt = ball.time_to_collision(self._container)
-            if dt != np.nan:    # Only considers possible collisions.
+            if dt != np.inf:    # Only considers possible collisions.
                  self._pq[Event((i,self._N_balls,ball_A._count,ball_B._count,dt))] = dt
     
     def collision_time(self):
@@ -98,11 +100,40 @@ class Simulation:
         for element in collisions:  # Add collisions to the priority queue.
             if element != self._N_balls:    # Calculating collisions with container.
                 dt = self._ball[element].time_to_collision(self._container)
-                if dt != np.nan:
-                    self._pq
+                if dt != np.inf:
+                    self._pq[Event((element,self._N_balls,self._ball[element]._count,-1,dt+self._global_time))]\
+                         = (dt + self._global_time)
 
+                for j in range(self._N_balls):  # Calculating collisions with balls.
+                    if j != element:            # Index ordering.
+                        if j < element:
+                            ball_A,ball_B = self._ball[j],self._ball[element]
+                            index_A,index_B = j,element
+                        else:
+                            ball_A,ball_B = self._ball[element],self._ball[j]
+                            index_A,index_B = element,j
 
+                    dt = ball_A.time_to_collision(ball_B)
+                    if dt != np.inf:        # Collision is possible.
+                        self._pq[Event((index_A,index_B,self._ball[index_A]._count,self._ball[index_B]._count,\
+                            dt + self._global_time))] = (dt + self._global_time)
 
+            else:   # If container collision happened.
+                for j in range(self._N_balls):
+                    dt = self._ball[j].time_to_collision(self._container)
+                    if dt != np.inf:        # Collision is possible.
+                        self._pq[Event((j, self._N_balls,self._ball[j]._count,-1,dt+self._global_time))]\
+                            = (dt + self._global_time)
+
+    def init_next_event(self):
+        """
+        Initialise the selection of next event.
+        Takes into account multiple collisions at the same time.
+        """
+        self._events = []   # List of next events.
+
+        min_dt_event = self._pq.popitem()[0]
+        self._min_dt = min_dt_event.dt()
             
 
         
