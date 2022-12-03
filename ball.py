@@ -18,13 +18,13 @@ class Ball:
         n_collision = 0,
         count = 0,
     ):
-        self._mass = mass
-        self._radius = radius
-        self._pos_ball = pos_ball
-        self._vel_ball = vel_ball
-        self._n_collision = n_collision
-        self._dp = 0
-        self._count = count
+        self._mass = mass                   # Mass of the ball.
+        self._radius = radius               # Radius of the ball.
+        self._pos_ball = pos_ball           # Position of the ball, as np.ndarray.
+        self._vel_ball = vel_ball           # Velocity of the ball, as np.ndarray.
+        self._n_collision = n_collision     # Number of collisions.
+        self._dp = 0                        # Change in momentum of the ball.
+        self._count = count                 # Count of the ball.
         return
     
     ### BALL INFORMATION METHODS
