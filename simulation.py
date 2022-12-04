@@ -13,12 +13,12 @@ import scipy.constants as spc
 
 class Simulation:
     """
-    SIMULATION CLASS
-    Simulates the movement of hard spherical gas particles in a circular container.
-    PARAMETERS
-        N_balls: the number of balls to simulate
-        r_balls: the radius of balls in the simulation
-        r_container: the radius of the container
+        SIMULATION CLASS | 
+        Simulates the movement of hard spherical gas particles in a circular container.
+        PARAMETERS
+            N_balls: the number of balls to simulate
+            r_balls: the radius of balls in the simulation
+            r_container: the radius of the container
     
     """
     def __init__(self,
@@ -65,6 +65,7 @@ class Simulation:
     # Gives all the simulation methods for returning information on the Simulation.
     def __repr__(self):
         return ("Simulation properties: N = {self._N_balls} balls, r_ball = {self._r_ball}, m_ball = {self._m_ball}, r_container = {self._r_container}")
+    
     def __str__(self):
         return ("Simulation: N = {self._N_balls} balls, r_ball = {self._r_ball, m_ball = {self._m_ball}, r_container = {self._r_container}")
     
@@ -741,18 +742,18 @@ class Simulation:
                               color='0.01', alpha=0.02)
             path_list.append(path)
         return path_list
-        
+
+    titleFont =     {'fontname': 'Kinnari', 'size': 13}
+    axesFont =      {'fontname': 'Kinnari', 'size': 9}
+    ticksFont =     {'fontname': 'SF Mono', 'size': 7}
+    errorStyle =    {'mew': 1, 'ms': 3, 'capsize': 3, 'color': 'blue', 'ls': ''}
+    pointStyle =    {'mew': 1, 'ms': 3, 'color': 'blue'}
+    lineStyle =     {'linewidth': 0.5}
+    lineStyleBold = {'linewidth': 1}
+    histStyle =     {'facecolor': 'green', 'alpha': 0.5, 'edgecolor': 'black'}
+    
     ### SIMULATION RUN METHOD
     # The method to run simulations. 
-    titleFont = {'fontname': 'Kinnari', 'size': 13}
-    axesFont = {'fontname': 'Kinnari', 'size': 9}
-    ticksFont = {'fontname': 'SF Mono', 'size': 7}
-    errorStyle = {'mew': 1, 'ms': 3, 'capsize': 3, 'color': 'blue', 'ls': ''}
-    pointStyle = {'mew': 1, 'ms': 3, 'color': 'blue'}
-    lineStyle = {'linewidth': 0.5}
-    lineStyleBold = {'linewidth': 1}
-    histStyle = {'facecolor': 'green', 'alpha': 0.5, 'edgecolor': 'black'}
-
     def run(
         self,
         collisions = 10,            # The number of collisions.
@@ -885,27 +886,27 @@ class Simulation:
         
 class Event(tuple):
     """
-    EVENT CLASS
-    A tuple of 5 elements (ball_A, ball_B, count_A, count_B, dt).
-    PARAMETERS
-        ball_A (int): The first ball in impending collision.
-        ball_B (int): The second ball in impending collision.
-        count_A (int): The number of collisions the first ball 
-            encountered prior to this impending collision calculation.
-        count_B (int): The number of collisions the second ball 
-            encountered prior to this impending collision calculation.
-        dt (float): The global time this collision will happen on. 
-    RETURNS
-        ball_A (int): the index of first ball in impending collision.
-        ball_B (int): the index of second ball in impending collision.
-        count_A (int): the number of collisions the first ball encountered prior to this impending collision calculation.
-        count_B (int): the number of collisions the second ball encountered prior to this impending collision calculation.
-        dt (float): the global time(step) this collision will happen on.
-        pair (list(int)): a list of the two balls or a ball and container involved in the collision.
+        EVENT CLASS | 
+        A tuple of 5 elements (ball_A, ball_B, count_A, count_B, dt).
+        PARAMETERS
+            ball_A (int): The first ball in impending collision.
+            ball_B (int): The second ball in impending collision.
+            count_A (int): The number of collisions the first ball 
+                encountered prior to this impending collision calculation.
+            count_B (int): The number of collisions the second ball 
+                encountered prior to this impending collision calculation.
+            dt (float): The global time this collision will happen on. 
+        RETURNS
+            ball_A (int): the index of first ball in impending collision.
+            ball_B (int): the index of second ball in impending collision.
+            count_A (int): the number of collisions the first ball encountered prior to this impending collision calculation.
+            count_B (int): the number of collisions the second ball encountered prior to this impending collision calculation.
+            dt (float): the global time(step) this collision will happen on.
+            pair (list(int)): a list of the two balls or a ball and container involved in the collision.
     """
-    def ball_A(self): return self[0]
-    def ball_B(self): return self[1]
-    def count_A(self): return self[2]
-    def count_B(self): return self[3]
-    def dt(self): return self[4]
-    def pair(self): return [self[0], self[1]]
+    def ball_A(self):   return self[0]
+    def ball_B(self):   return self[1]
+    def count_A(self):  return self[2]
+    def count_B(self):  return self[3]
+    def dt(self):       return self[4]
+    def pair(self):     return [self[0], self[1]]
