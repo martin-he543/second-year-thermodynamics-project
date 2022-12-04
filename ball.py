@@ -1,22 +1,17 @@
 """
-BALL MODULE (import ball as bl)
-Created by Martin A. He, 2022.11.20
+BALL MODULE (import ball as bl) | Created by 𝑀𝒶𝓇𝓉𝒾𝓃 𝒜. 𝐻𝑒, 2022.11.20
 For the simulation of elastic collisions of balls with others, and container.
 """
-
 import numpy as np
 from copy import deepcopy
 
 class Ball:
     time = 0
     def __init__(
-        self,
-        mass = 1,
-        radius = 1,
+        self, mass = 1, radius = 1,
         pos_ball = np.array([0.0,0.0]),
         vel_ball = np.array([0.0,0.0]),
-        n_collision = 0,
-        count = 0,
+        n_collision = 0, count = 0
     ):
         self._mass = mass                   # Mass of the ball.
         self._radius = radius               # Radius of the ball.
@@ -58,55 +53,36 @@ class Ball:
             - If dt_1 <= 0, but dt_2 > 0, return dt_2.
             - If dt_2 <= 0, but dt_1 > 0, return dt_1.
         """
-        r = self._pos_ball - other._pos_ball
-        v = self._vel_ball - other._vel_ball
+        r, v = self._pos_ball - other._pos_ball, self._vel_ball - other._vel_ball
+        a, b, c = np.dot(v,v), 2 * np.dot(r,v), np.dot(r,r) - R**2
+        dt = -b/(2*a); discrim = b**2 - 4*a*c
         
-        a = np.dot(v,v)
-        b = 2 * np.dot(r,v)
-        
-        if a == 0:  
-            # Both balls are stationary (w.r.t. each other).
-            return np.inf
+        # Both balls are stationary (w.r.t. each other).
+        if a == 0:  return np.inf
         else:
-            if isinstance(other,Container):
-                R = self._radius - other._radius
-            else:
-                R = self._radius + other._radius
-            c = np.dot(r,r) - R**2
+            if isinstance(other,Container): R = self._radius - other._radius
+            else:                           R = self._radius + other._radius
             
             if not isinstance(other,Container):
-                if np.abs(c) <= 10e-13:
+                if np.abs(c) <= 10e-13: return np.inf
                     # Encounters a floating point error - no collision.
-                    return np.inf
-                
-            discrim = b**2 - 4*a*c
+    
             if discrim < 0: 
                 # Complex dt - no collision.
                 return np.inf
-            elif discrim == 0:
-                # Repeated root
-                dt = -b/(2*a)
-                if dt <= 0:
-                    # Negative dt - no collision.
-                    return np.inf
-                else:
-                    return dt
-            elif discrim > 0: 
-                # Two real roots - dt_1, dt_2.
+            elif discrim == 0:              # Repeated root
+                if dt <= 0: return np.inf   # Negative, or no dt - no collision.
+                else: return dt             # Positive dt.
+            elif discrim > 0:               # Two real roots - dt_1, dt_2.
                 dt_1 = (-b + np.sqrt(discrim))/(2*a)
                 dt_2 = (-b - np.sqrt(discrim))/(2*a)
                 
-                if isinstance(other,Container):
-                    return np.amax(np.array([dt_1,dt_2]))
+                if isinstance(other,Container): return np.amax(np.array([dt_1,dt_2]))
                 else:
-                    if dt_1 <= 0 and dt_2 <= 0:
-                        return np.inf
-                    elif dt_1 > 0 and dt_2 > 0:
-                        return np.amin(np.array([dt_1,dt_2]))
-                    elif dt_1 < 0:
-                        return dt_2
-                    elif dt_2 < 0:
-                        return dt_1
+                    if dt_1 <= 0 and dt_2 <= 0: return np.inf
+                    elif dt_1 > 0 and dt_2 > 0: return np.amin(np.array([dt_1,dt_2]))
+                    elif dt_1 < 0:              return dt_2
+                    elif dt_2 < 0:              return dt_1
 
     def collide(self, other):
         """
@@ -158,93 +134,62 @@ class Ball:
 
 
     ### BALL ATTRIBUTE METHODS
-    
-    def mass(self):
-        """
-        Return the mass of the ball.
-        RETURNS
-            mass (float): the mass of the ball.
-        """
-        return self._mass
-    
-    def radius(self):
-        """
-        Return the radius of the ball.
-        RETURNS
-            radius (float): the radius of the ball.
-        """
-        return self._radius
-    
-    def pos(self):
-        """
-        Return the current position.
-        RETURNS 
-            position (np.ndarray w/ float values): the current position of the centre of the ball.
-        """
-        return self._pos_ball
-
-    def vel(self):
-        """
-        Return the current velocity.
-        RETURNS
-            velocity (np.ndarray w/ float values): the current 2D velocity of the ball.
-        """
-        return self._vel_ball
-    
-    def set_mass(self, mass):
-        """
-        Define the new mass of the ball.
-        PARAMETERS
-            mass (float): the new defined mass of the ball.
-        """
-        self._mass = mass
-    
-    def set_radius(self,radius):
-        """
-        Define the new radius of the ball.
-        PARAMETERS
-            radius (float): the new defined radius of the ball.
-        """
-        self._radius = radius
-        
-    def set_pos(self, pos):
-        """
-        Define the new position of the ball.
-        PARAMETERS
-            pos (np.ndarray(contains: float)): the new defined position of the ball.
-        """
-        self._pos_ball = np.array(pos)
-    
-    def set_vel(self,vel):
-        """
-        Define the new velocity of the ball.
-        PARAMETERS
-        
-        """
-        self._vel_ball = np.array(vel)
-        
-    ### BALL OTHER METHODS
-    
-    def copy(self):
-        """
-        Performs a deepcopy of the ball.
-        
+    """ Various properties and attributes of the ball are returned/altered.
+        copy | Performs a deepcopy of the ball.
         RETURNS
             (Ball): an identical Ball object, located within itself.
-        """
-        return deepcopy(self)
-
-# Inherit the ball class for the container class.
-class Container(Ball):
+        
+        mass | Return the mass of the ball.
+        RETURNS
+            mass (float): the mass of the ball.
+        
+        radius | Return the radius of the ball.
+        RETURNS
+            radius (float): the radius of the ball.
+        
+        position | Return the current position.
+        RETURNS 
+            position (np.ndarray w/ float values): the current position of the centre of the ball.
+        
+        velocity | Return the current velocity.
+        RETURNS
+            velocity (np.ndarray w/ float values): the current 2D velocity of the ball.
+        
+        set_mass | Define the new mass of the ball.
+        PARAMETERS
+            mass (float): the new defined mass of the ball.
+            
+        set_radius | Define the new radius of the ball.
+        PARAMETERS
+            radius (float): the new defined radius of the ball.
+            
+        set_pos | Define the new position of the ball.
+        PARAMETERS
+            pos (np.ndarray(contains: float)): the new defined position of the ball.
+            
+        set_vel | Define the new velocity of the ball.
+        PARAMETERS
     """
+    def copy(self):     return deepcopy(self)
+    def mass(self):     return self._mass
+    def radius(self):   return self._radius
+    def pos(self):      return self._pos_ball
+    def vel(self):      return self._vel_ball
+
+    def set_mass(self, mass):       self._mass = mass
+    def set_radius(self,radius):    self._radius = radius
+    def set_pos(self, pos):         self._pos_ball = np.array(pos)
+    def set_vel(self,vel):          self._vel_ball = np.array(vel)
+
+class Container(Ball): # Inherit the ball class for the container class.
+    """
+    CONTAINER CLASS
     This is a Container class. The container is used to enclose the balls in
     the 2D rigid disc collision.
-
     PARAMETERS
         radius (float): the radius of the container.
         mass (float): the mass of the container.
     """
-
     def __init__(self, radius=10, mass=100):
         super().__init__()
         self._radius = radius
