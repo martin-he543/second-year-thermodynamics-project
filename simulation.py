@@ -153,9 +153,9 @@ class Simulation:
         """ init_next_event | Initialisation of new event.
             Accounts for multiple simultaneous collisions. """
         self._events = []   # List of next events.
-        
-        self._min_dt = self._pq.popitem()[0].dt()       # Find next event.
-        self._events.append(self._pq.popitem()[0])      # Add back to list.
+        min_event = self._pq.popitem()[0]
+        self._min = min_event.dt()       # Find next event.
+        self._events.append(min_event)      # Add back to list.
         
         while len(self._pq) != 0:       # Check for multiple collisions.
             if self._pq.peekitem()[0].dt().dt == self._min_dt:
@@ -817,7 +817,6 @@ class Simulation:
                                 distance_relative=distance_relative,
                                 speed=speed, KE=KE,
                                 temperature=temperature,
-                                distance_relative=distance_relative,
                                 dataset=dataset)
 
         self.init_collision_time()      # Run the first collision.
@@ -835,7 +834,6 @@ class Simulation:
                                 distance_relative=distance_relative,
                                 speed=speed, KE=KE,
                                 temperature=temperature,
-                                distance_relative=distance_relative,
                                 dataset=dataset)
         
         if progress_bar: self._time_epoch = tm.time()
@@ -858,7 +856,6 @@ class Simulation:
                                 distance_relative=distance_relative,
                                 speed=speed, KE=KE,
                                 temperature=temperature,
-                                distance_relative=distance_relative,
                                 dataset=dataset)
         
         if animate: plt.show()

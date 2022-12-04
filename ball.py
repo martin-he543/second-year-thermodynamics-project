@@ -54,8 +54,7 @@ class Ball:
             - If dt_2 <= 0, but dt_1 > 0, return dt_1.
         """
         r, v = self._pos_ball - other._pos_ball, self._vel_ball - other._vel_ball
-        a, b, c = np.dot(v,v), 2 * np.dot(r,v), np.dot(r,r) - R**2
-        dt = -b/(2*a); discrim = b**2 - 4*a*c
+        a, b  = np.dot(v,v), 2 * np.dot(r,v)
         
         # Both balls are stationary (w.r.t. each other).
         if a == 0:  return np.inf
@@ -63,6 +62,8 @@ class Ball:
             if isinstance(other,Container): R = self._radius - other._radius
             else:                           R = self._radius + other._radius
             
+            c = np.dot(r,r) - R**2
+            dt = -b/(2*a); discrim = b**2 - 4*a*c
             if not isinstance(other,Container):
                 if np.abs(c) <= 10e-13: return np.inf
                     # Encounters a floating point error - no collision.
@@ -103,7 +104,7 @@ class Ball:
             v_self_per = u_self_per
             self.set_vel(v_self_par + v_self_per)
             other.set_vel(np.zeros(2))
-            self.count, other.count += 1, 1
+            self._count += 1; other._count += 1
             
             vel_f = self._vel_ball
             vel_i = self._vel_ball
@@ -115,7 +116,8 @@ class Ball:
             m1,m2 = self._mass, other._mass
             
             # Only care about parallel components in 1D. Consider relative velocities.
-            u_other_par,u_other_per = np.vdot(other._vel_ball, r) / np.dot(r,r) * r, other._v_ball - u_other_par
+            u_other_par = np.vdot(other._vel, r) / np.dot(r,r) * r
+            u_other_per = other._vel - u_other_par
             u_self_par_relative = u_self_par - u_other_par
             v_self_par_relative = (m1 - m2)/(m1 + m2) * u_self_par_relative
             
@@ -124,7 +126,7 @@ class Ball:
             v_self_per, v_other_per = u_self_per, u_other_per
             self.set_vel(v_self_par + v_self_per)
             other.set_vel(v_other_par + v_other_per)
-            self._count, other._count += 1, 1
+            self._count += 1; other._count += 1
             
     def move(self,dt):
         """

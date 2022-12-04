@@ -31,13 +31,13 @@ class Ball:
     def collide(self, other):
         r = self._pos_ball - other._pos_ball; u_self_par = np.vdot(self._vel_ball, r) / np.dot(r,r) * r; u_self_per = self._vel_ball - u_self_par
         if isinstance(other,Container):
-            v_self_par,v_other_par = -u_self_par, np.zeros(2); v_self_per = u_self_per; self.set_vel(v_self_par + v_self_per); other.set_vel(np.zeros(2)); self.count, other.count += 1, 1
+            v_self_par,v_other_par = -u_self_par, np.zeros(2); v_self_per = u_self_per; self.set_vel(v_self_par + v_self_per); other.set_vel(np.zeros(2)); self.count += 1; other.count += 1
             vel_f,vel_i = self._vel_ball,self._vel_ball; dv = vel_f - vel_i; self._dp = dv * self._mass
         else:
             m1,m2 = self._mass, other._mass; u_other_par,u_other_per = np.vdot(other._vel_ball, r) / np.dot(r,r) * r, other._v_ball - u_other_par
             u_self_par_relative = u_self_par - u_other_par; v_self_par_relative = (m1 - m2)/(m1 + m2) * u_self_par_relative
             v_self_par = v_self_par_relative + u_other_par; v_other_par = u_self_par - u_other_par + v_self_par; v_self_per, v_other_per = u_self_per, u_other_per
-            self.set_vel(v_self_par + v_self_per); other.set_vel(v_other_par + v_other_per); self._count, other._count += 1, 1
+            self.set_vel(v_self_par + v_self_per); other.set_vel(v_other_par + v_other_per); self.count += 1; other.count += 1
     def move(self,dt): self.set_pos(self._pos + dt * self._vel)
     def mass(self): return self._mass
     def radius(self): return self._radius
