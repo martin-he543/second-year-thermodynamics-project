@@ -52,9 +52,8 @@ def rejection(a, b):  # writing rejection vector of a on b
     """
     return a - projection(a, b)
 
-"""
-BALL MODULE (import ball as bl) | Created by 𝑀𝒶𝓇𝓉𝒾𝓃 𝒜. 𝐻𝑒, 2022.11.20
-For the simulation of elastic collisions of balls with others, and container.
+""" BALL MODULE (import ball as bl) | Created by 𝑀𝒶𝓇𝓉𝒾𝓃 𝒜. 𝐻𝑒, 2022.11.20
+    For the simulation of elastic collisions of balls with others, and container.
 """
 import numpy as np
 from copy import deepcopy
@@ -147,6 +146,7 @@ class Ball:
         """
         # Transform the positions relative to each other.
         r = self._pos - other._pos
+        v = self._vel - other._vel
         
         # Resolve the velocity into // and |_ to the line of centres.
         u_self_par = np.vdot(self._vel, r) / np.dot(r,r) * r
@@ -168,6 +168,8 @@ class Ball:
         # Consider collisions with another ball.
         else:
             m1,m2 = self._mass, other._mass
+            # self.set_vel(self._vel - ((2*m2)/(m1*m2))*(np.dot(v,r)/np.dot(r,r))*r)
+            # other.set_vel(other._vel - ((2*m1)/(m1*m2))*(np.dot(-v,-r)/np.dot(-r,-r))*(-r))
             
             # Only care about parallel components in 1D. Consider relative velocities.
             u_other_par = np.vdot(other._vel, r) / np.dot(r,r) * r
@@ -182,9 +184,10 @@ class Ball:
             other.set_vel(v_other_par + v_other_per)
             self._count += 1; other._count += 1
             
+
+            
     def move(self,dt):
-        """
-        Move the ball to a new position: r' = r + v * dt.
+        """ move | Move the ball to a new position: r' = r + v * dt.
         """
         self.set_pos(self._pos + dt * self._vel)
 
@@ -238,13 +241,12 @@ class Ball:
     def set_vel(self,vel):          self._vel = np.array(vel)
 
 class Container(Ball): # Inherit the ball class for the container class.
-    """
-    CONTAINER CLASS
-    This is a Container class. The container is used to enclose the balls in
-    the 2D rigid disc collision.
-    PARAMETERS
-        radius (float): the radius of the container.
-        mass (float): the mass of the container.
+    """ CONTAINER CLASS
+        This is a Container class. The container is used to enclose the balls in
+        the 2D rigid disc collision.
+        PARAMETERS
+            radius (float): the radius of the container.
+            mass (float): the mass of the container.
     """
     def __init__(self, radius=10, mass=100):
         super().__init__()

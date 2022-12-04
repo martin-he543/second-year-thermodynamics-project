@@ -1,3 +1,4 @@
+    #%% Simulation Initialisation
 """
 SIMULATION MODULE (import simulation as sm) | Created by 𝑀𝒶𝓇𝓉𝒾𝓃 𝒜. 𝐻𝑒, 2022.11.20
 For the simulation of elastic collisions of balls with others, and container.
@@ -64,6 +65,7 @@ class Simulation:
         if random_position: self.gen_random_positions()    
         self.gen_random_velocities(maximum_speed_range=random_speed_range)
 
+    #%% Simulation Information
     ### SIMULATION INFORMATION METHODS
     # Gives all the simulation methods for returning information on the Simulation.
     def __repr__(self):
@@ -91,6 +93,7 @@ class Simulation:
         if brownian: gloss["Brownian"] = self.brownian
         return gloss
     
+    #%% Simulation Movement
     ### SIMULATION MOVEMENT METHODS
     # Gives all the simulation methods for defining movement of balls.
     # For clarity, next_collision function has been split into several subfunctions.
@@ -109,12 +112,12 @@ class Simulation:
         for pair in self._pairs:    # All possible combos of ball pairs.
             ball_A, ball_B = self._balls[pair[0]], self._balls[pair[1]]
             dt = ball_A.time_to_collision(ball_B)
-            if dt != np.inf:    # Only considers possible collisions.
+            if dt != np.inf:        # Only considers possible collisions.
                 self._pq[Event((pair[0],pair[1],ball_A._count,ball_B._count,dt))] = dt
         
         for i, ball in np.ndenumerate(self._balls): # Change to enumerate if fails
             dt = ball.time_to_collision(self._container)
-            if dt != np.inf:    # Only considers possible collisions.
+            if dt != np.inf:                    # Consider possible collisions.
                  self._pq[Event((i,self._N_balls,ball._count,-1,dt))] = dt
 
     def collision_time(self):
@@ -124,16 +127,16 @@ class Simulation:
             for collided in event.pair():
                 collided_ball.add(collided)
         
-        for element in collided_ball: # Add events to the priority queue.
-            if element != self._N_balls: # Collisions with the container.
+        for element in collided_ball:       # Add events to the priority queue.
+            if element != self._N_balls:    # Collisions with the container.
                 dt = self._balls[element].time_to_collision(self.container)
                 if dt != np.inf:
                     self._pq[Event((element,self._N_balls,self._balls[element]._count,\
                         -1,dt+self._global_time,))] = (dt + self._global_time)
         
-                for j in range(self._N_balls): # Collisions with other balls.
+                for j in range(self._N_balls):  # Collisions with other balls.
                     if j != element:
-                        if j < element: # Ensure smaller index first.
+                        if j < element:         # Ensure smaller index first.
                             ball_A, ball_B = self._balls[j],self._balls[element]
                             index_A, index_B = j, element
                         else:
@@ -141,7 +144,7 @@ class Simulation:
                             index_A,index_B = element, j
                         
                         dt = ball_A.time_to_collision(ball_B)
-                        if dt != np.inf:    # Check collision is possible.
+                        if dt != np.inf:        # Check collision is possible.
                             self._pq[Event((index_A,index_B,self._balls[index_A]._count,self._balls[index_B]._count,dt + self._global_time))]\
                                 = (dt + self._global_time)
                                 
@@ -215,7 +218,8 @@ class Simulation:
         self._N_collisions += 1
         if brownian:
             if record: self._record_brownian()
-        
+    
+    #%% Simulation Recording
     ### SIMULATION RECORDING METHODS
     # Gives simulation methods for recording data.
 
@@ -445,7 +449,8 @@ class Simulation:
         """ 
         if pressure:        self.record_pressure_moyen()
         if test_pressure:   self.record_pressure()
-        
+
+    #%% Simulation Property
     ### SIMULATION PROPERTY METHODS
     # Gives all the simulation methods about properties of the system.
     """
@@ -536,9 +541,9 @@ class Simulation:
         else:                   list_number = list(range(self._N_balls + 1))
         return                  list(it.combinations(list_number, 2))
    
+    #%% Simulation Randomisation
     ### SIMULATION RANDOMISATION METHODS
     # Gives all the randomisation methods for the simulation.
-
     def gen_random_uniform(maximum_range):
         """ gen_random_uniform | Provides a uniform distribution centered at (0,0), generating random floats.
             PARAMETERS
@@ -546,7 +551,7 @@ class Simulation:
             RETURNS
                 (float): a random float between [-max_range, max_range].
         """
-        return np.random.uniform(-maximum_range,maximum_range)
+        return np.random.uniform(-maximum_range,maximum_range)   
 
     def gen_random_velocities(self, N_balls, maximum_speed_range):
         """ gen_random_velocities | Generates random velocities from a uniform distribution
@@ -597,6 +602,7 @@ class Simulation:
                 if append or i == 0: break
             self.ball[i].set_pos(position)
 
+    #%% Simulation Brownian
     ### SIMULATION BROWNIAN MOTION INVESTIGATION
     # Gives all the methods for the Brownian Motion investigation.
     
@@ -641,6 +647,7 @@ class Simulation:
             color="black", alpha=0.6,lw=0.7)
         return trace
 
+    #%% Simulation Display
     ### SIMULATION DISPLAY METHODS
     # Gives all the links with Pylab and Matplotlib.
 
@@ -686,6 +693,7 @@ class Simulation:
         for i in range(0,self._N_balls):
             self._ball_patches[i].center = self._balls[i].pos()
     
+    #%% Simulation Miscellaneous
     ### SIMULATION MISCELLANEOUS METHODS
     def linear_inter(x, x_1, x_2, y_1, y_2):
         """ linear_inter | Returns y-value for two given linear equations.
@@ -755,6 +763,7 @@ class Simulation:
     lineStyleBold = {'linewidth': 1}
     histStyle =     {'facecolor': 'green', 'alpha': 0.5, 'edgecolor': 'black'}
     
+    #%% Simulation Run
     ### SIMULATION RUN METHOD
     # The method to run simulations. 
     def run(

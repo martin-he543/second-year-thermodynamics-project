@@ -166,8 +166,6 @@ class Simulation:
   
     ### SIMULATION RANDOMISATION METHODS
     # Gives all the randomisation methods for the simulation.
-    
-
     def generator_random_position(self, start=0):
         """
         Generates random positions for balls such that they do not overlap.
@@ -211,23 +209,7 @@ class Simulation:
                 if append or i == 0:
                     break
             self._ball[i].set_pos(pos)
-# CHECK
-    def init_brownian(self, radius=5, mass=10):
-        """
-        Initialise simulation for Brownian Motion Calculations.
-        Sets ball 0 to be the ball under investigation.
-        Position of ball 0 would be at the origin.
-        The rest of the balls will be randomly distributed in the container.
 
-        Parameters:
-            radius (float, optional): Radius of the ball under investigation.
-            mass (float, optional): Radius of the ball under investigation.
-        """
-        self._ball[0].set_pos(np.array([0, 0]))
-        self._ball[0].set_radius(radius)
-        self._ball[0].set_mass(mass)
-        self.generator_random_position(start=1)
-# CHECK
     def generator_random_vel(self, max_speed):
         """
         Generates and sets random velocities for all the balls from a uniform 
@@ -239,6 +221,24 @@ class Simulation:
         """
         l = generate_random_vel(self._N_balls, self._random_speed)
         self.set_vel_ball(l)
+        
+    
+    ### SIMULATION BROWNIAN MOTION INVESTIGATION
+    # Gives all the methods for the Brownian Motion investigation.
+    def brownian_init(self, radius = 5, mass = 10):
+        """ brownian_init | Initialisation of Brownian motion investigation, ball "0".
+            -> Position of ball 0 is initialised to (0,0).
+            -> Remaining balls are randomly distributed in the container.
+            PARAMETERS
+                radius (float, optional): radius of ball being investigated.
+                mass (float, optional): mass of ball being investigated.
+        """
+        self._balls[0].set_pos(np.array([0.0,0.0]))
+        self._balls[0].set_radius(radius)
+        self._balls[0].set_mass(mass)
+        self.generator_random_position(start = 1)
+
+
 # CHECK
     def set_vel_ball(self, l_vel):
         """
@@ -541,7 +541,10 @@ class Simulation:
         if brownian:
             if record:
                 self.record_brownian()
+                
 
+    ### SIMULATION RECORDING METHODS
+    # Gives simulation methods for recording data.
     def record_dataset(self):
         """
         Writes all simulation information into a pandas.DataFrame.
@@ -937,6 +940,17 @@ class Simulation:
 
         return d_output
 
+    titleFont =     {'fontname': 'Kinnari', 'size': 13}
+    axesFont =      {'fontname': 'Kinnari', 'size': 9}
+    ticksFont =     {'fontname': 'SF Mono', 'size': 7}
+    errorStyle =    {'mew': 1, 'ms': 3, 'capsize': 3, 'color': 'blue', 'ls': ''}
+    pointStyle =    {'mew': 1, 'ms': 3, 'color': 'blue'}
+    lineStyle =     {'linewidth': 0.5}
+    lineStyleBold = {'linewidth': 1}
+    histStyle =     {'facecolor': 'green', 'alpha': 0.5, 'edgecolor': 'black'}
+    
+    ### SIMULATION RUN METHOD
+    # The method to run simulations. 
     def run(
         self,
         collisions=10,
