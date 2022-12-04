@@ -1,3 +1,57 @@
+def magsquare_vector(vector):
+    """
+    Calculates the magnitude squared of a vector.
+
+    Arguments:
+        vector (numpy.ndarray of float): Vector.
+    
+    Returns:
+        (float): The magnitude squared of the vector.
+    """
+    return np.dot(vector, vector)
+
+
+def mag_vector(vector):
+    """
+    Calculates the magnitude of a vector.
+
+    Arguments:
+        vector (numpy.ndarray of float): Vector.
+    
+    Returns:
+        (float): The magnitude of the vector.
+    """
+    return np.sqrt(magsquare_vector(vector))
+
+
+def projection(a, b):
+    """
+    Calculates the projection vector of a on b.
+
+    Arguments:
+        a (numpy.ndarray of float): Vector to find projection of.
+        b (numpy.ndarray of float): Vector to be projected on.
+    
+    Returns:
+        (numpy.ndarray of float): The projection vector of a on b.
+    """
+    magsquare_b = magsquare_vector(b)
+    return np.vdot(a, b) / magsquare_b * b
+
+
+def rejection(a, b):  # writing rejection vector of a on b
+    """
+    Calculates the rejection vector of a on b.
+
+    Arguments:
+        a (numpy.ndarray of float): Vector to find rejection of.
+        b (numpy.ndarray of float): Vector to be rejected on.
+    
+    Returns:
+        (numpy.ndarray of float): The rejection vector of a on b.
+    """
+    return a - projection(a, b)
+
 """
 BALL MODULE (import ball as bl) | Created by 𝑀𝒶𝓇𝓉𝒾𝓃 𝒜. 𝐻𝑒, 2022.11.20
 For the simulation of elastic collisions of balls with others, and container.
@@ -9,14 +63,14 @@ class Ball:
     time = 0
     def __init__(
         self, mass = 1, radius = 1,
-        pos_ball = np.array([0.0,0.0]),
-        vel_ball = np.array([0.0,0.0]),
+        pos = np.array([0.0,0.0]),
+        vel = np.array([0.0,0.0]),
         n_collision = 0, count = 0
     ):
         self._mass = mass                   # Mass of the ball.
         self._radius = radius               # Radius of the ball.
-        self._pos_ball = pos_ball           # Position of the ball, as np.ndarray.
-        self._vel_ball = vel_ball           # Velocity of the ball, as np.ndarray.
+        self._pos = pos                     # Position of the ball, as np.ndarray.
+        self._vel = vel                     # Velocity of the ball, as np.ndarray.
         self._n_collision = n_collision     # Number of collisions.
         self._dp = 0                        # Change in momentum of the ball.
         self._count = count                 # Count of the ball.
@@ -25,9 +79,9 @@ class Ball:
     ### BALL INFORMATION METHODS
     
     def __repr__(self):
-        return ("Ball properties: mass = {self._mass}, radius = {self._radius}, position = {self._pos_ball}, velocity = {self._vel_ball}")
+        return ("Ball properties: mass = {self._mass}, radius = {self._radius}, position = {self._pos}, velocity = {self._vel}")
     def __str__(self):
-        return ("Ball: m = {self._mass}; r = {self._radius}; x = {self._pos_ball}; v = {self._vel_ball}")
+        return ("Ball: m = {self._mass}; r = {self._radius}; x = {self._pos}; v = {self._vel}")
 
     ### BALL MOVEMENT METHODS
     
@@ -53,7 +107,7 @@ class Ball:
             - If dt_1 <= 0, but dt_2 > 0, return dt_2.
             - If dt_2 <= 0, but dt_1 > 0, return dt_1.
         """
-        r, v = self._pos_ball - other._pos_ball, self._vel_ball - other._vel_ball
+        r, v = self._pos - other._pos, self._vel - other._vel
         a, b  = np.dot(v,v), 2 * np.dot(r,v)
         
         # Both balls are stationary (w.r.t. each other).
@@ -92,11 +146,11 @@ class Ball:
             other (Ball): the other ball which collides with this one.
         """
         # Transform the positions relative to each other.
-        r = self._pos_ball - other._pos_ball
+        r = self._pos - other._pos
         
         # Resolve the velocity into // and |_ to the line of centres.
-        u_self_par = np.vdot(self._vel_ball, r) / np.dot(r,r) * r
-        u_self_per = self._vel_ball - u_self_par
+        u_self_par = np.vdot(self._vel, r) / np.dot(r,r) * r
+        u_self_per = self._vel - u_self_par
         
         # Consider collisions with the container.
         if isinstance(other,Container):
@@ -106,8 +160,8 @@ class Ball:
             other.set_vel(np.zeros(2))
             self._count += 1; other._count += 1
             
-            vel_f = self._vel_ball
-            vel_i = self._vel_ball
+            vel_f = self._vel
+            vel_i = self._vel
             dv = vel_f - vel_i
             self._dp = dv * self._mass
             
@@ -175,13 +229,13 @@ class Ball:
     def copy(self):     return deepcopy(self)
     def mass(self):     return self._mass
     def radius(self):   return self._radius
-    def pos(self):      return self._pos_ball
-    def vel(self):      return self._vel_ball
+    def pos(self):      return self._pos
+    def vel(self):      return self._vel
 
     def set_mass(self, mass):       self._mass = mass
     def set_radius(self,radius):    self._radius = radius
-    def set_pos(self, pos):         self._pos_ball = np.array(pos)
-    def set_vel(self,vel):          self._vel_ball = np.array(vel)
+    def set_pos(self, pos):         self._pos = np.array(pos)
+    def set_vel(self,vel):          self._vel = np.array(vel)
 
 class Container(Ball): # Inherit the ball class for the container class.
     """
