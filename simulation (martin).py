@@ -376,8 +376,8 @@ class Simulation:
                 -> collision(float): Collision number.
         """
         if df == False:
-            self._brownian.append(np.array[self._ball[0]._pos[0],\
-                self._ball[0]._pos[1], self._global_time, self._N_collisions])
+            self._brownian.append(np.array([self._ball[0]._pos[0],\
+                self._ball[0]._pos[1], self._global_time, self._N_collisions]))
         else:       # Once data completes, add to pd.DataFrame
             self._brownian = pd.DataFrame(self._brownian,\
                 columns = ['x','y','t','collision'])
@@ -919,3 +919,5 @@ class Event(tuple):
     def count_B(self):  return self[3]
     def dt(self):       return self[4]
     def pair(self):     return [self[0], self[1]]
+    
+    

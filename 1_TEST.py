@@ -51,10 +51,10 @@ collisions_P = 50000
 print("Starting Simulation for Steady State Pressure Distribution")
 
 sim_test_P = sim.Simulation(
-    N_ball=N_ball_P,
+    N_balls=N_ball_P,
     r_container=r_container_P,
-    r_ball=r_ball_P,
-    m_ball=m_ball_P,
+    r_balls=r_ball_P,
+    m_balls=m_ball_P,
     random_speed_range=random_speed_range_P,
 )
 param_test_P = sim_test_P.run(collisions=collisions_P, test_pressure=True)
@@ -106,17 +106,30 @@ random_speed_range = 500
 collisions = 5000
 # -----------------------------------------------------------------------------#
 
+#%%
+import simulation as sim
+import seaborn as sns
+import matplotlib.pyplot as plt
+import scipy as sp
+import numpy as np
 print("Starting Simulation for KE Conservation and Distance Distributions")
 
+m_ball = 5e-26
+N_ball = 50
+r_ball = 0.2
+r_container = 10
+random_speed_range = 500
+collisions = 5000
+
 sim_test = sim.Simulation(
-    N_ball=N_ball,
+    N_balls=N_ball,
     r_container=r_container,
-    r_ball=r_ball,
-    m_ball=m_ball,
+    r_balls=r_ball,
+    m_balls=m_ball,
     random_speed_range=random_speed_range,
 )
 param_test = sim_test.run(
-    collisions=collisions, KE=True, dist_centre=True, dist_rel=True
+    collisions=collisions, KE=True, distance_absolute=True, distance_relative=True
 )
 
 # KE_test = param_test["KE"]
@@ -143,7 +156,7 @@ print("Plotting Graph 3 of 4")
 plt.figure(num="Relative Distance between Balls")
 sns.set(context="paper", style="darkgrid", palette="muted")
 
-sns.distplot(dist_rel_test)
+sns.displot(dist_rel_test)
 
 plt.title("Relative Ball Distance Distribution")
 plt.xlabel(r"Distance between Balls $/m$")
@@ -157,7 +170,7 @@ print("Plotting Graph 4 of 4")
 plt.figure(num="Distance of Balls from Origin")
 sns.set(context="paper", style="darkgrid", palette="muted")
 
-sns.distplot(dist_centre_test, kde=False, norm_hist=True)
+sns.displot(dist_centre_test, kde=False, norm_hist=True)
 
 plt.title("Distance Distribution from Origin")
 plt.xlabel("Ball Distance from Origin $/m$")
@@ -166,3 +179,5 @@ plt.tight_layout()
 plt.show()
 
 print("End of Script")
+
+# %%

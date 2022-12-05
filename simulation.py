@@ -1,7 +1,8 @@
 """
-SIMULATION MODULE (import simulation as sm) | Created by 𝑀𝒶𝓇𝓉𝒾𝓃 𝒜. 𝐻𝑒, 2022.11.20
-For the simulation of elastic collisions of balls with others, and container.
+    SIMULATION MODULE (import simulation as sm) | Created by 𝑀𝒶𝓇𝓉𝒾𝓃 𝒜. 𝐻𝑒, 2022.11.20
+    For the simulation of elastic collisions of balls with others, and container.
 """
+    #%% Simulation Initialisation ✔️
 import ball as bl
 import event as ev
 import numpy as np
@@ -57,13 +58,14 @@ class Simulation:
         self._global_time = 0               # Global timer.
         self._events = []                   # List of current events.
         self._min_dt = 0                    # Minimum time to next collision.
-        self._collision_count = 0
+        self._N_collisions = 0
                 
         for _ in range(0, N_balls):
             self._ball.append(bl.Ball(radius=r_balls, mass=m_balls))
         if random_position: self.generator_random_position()
         self.generator_random_vel(max_speed=random_speed_range)
         
+    #%% Simulation Information ✔️
     ### SIMULATION INFORMATION METHODS
     # Gives all the simulation methods for returning information on the Simulation.
     def __repr__(self):
@@ -71,7 +73,27 @@ class Simulation:
     
     def __str__(self):
         return ("Simulation: N = {self._N_balls} balls, r_balls = {self._r_balls}, m_balls = {self._m_balls}, r_container = {self._r_container}")
-
+    
+    def glossary(self, speed=False, KE=False,
+                 distance_absolute=False, distance_relative = False,temperature=False, test_temperature=False,
+                 pressure=False, test_pressure=False,
+                 dataset=False, brownian=False):
+        """ glossary | Appends glossary of various datasets at end of simulation.
+        """
+        gloss = {}
+        if speed: gloss["Speed"] = self._speed
+        if KE: gloss["Kinetic Energy"] = self._KE
+        if distance_absolute: gloss["Distance from O"] = self._distance_absolute
+        if distance_relative: gloss["Relative Distance"] = self._distance_relative
+        if temperature: gloss["<Temperature>"] = self._temperature_moyen
+        if test_temperature: gloss["Temperature"] = self._temperature
+        if pressure: gloss["<Pressure>"] = self._pressure_moyen
+        if test_pressure: gloss["Pressure"] = self._pressure
+        if dataset: gloss["Dataset"] = self._dataset
+        if brownian: gloss["Brownian"] = self.brownian
+        return gloss
+    
+    #%% Simulation Property ✔️
     ### SIMULATION PROPERTY METHODS
     # Gives all the simulation methods about properties of the system.
     """
@@ -164,147 +186,18 @@ class Simulation:
         else:                   list_number = list(range(self._N_balls + 1))
         return                  list(it.combinations(list_number, 2))   
   
-    ### SIMULATION RANDOMISATION METHODS
-    # Gives all the randomisation methods for the simulation.
-    def generator_random_position(self, start=0):
-        """
-        Generates random positions for balls such that they do not overlap.
-        
-        Parameters:
-            start (boolean, optional): The starting index of ball to set random 
-                positions for. Used when initialising brownian motion 
-                investigation because the large ball starts at the origin.
 
-        Raises:
-            Exception: When the balls cannot fit in the container. Reduce
-                number of balls or increase container radius.
-        """
-        for i in range(start, self._N_balls):
-            pos = np.zeros(2)
-            false_count = 0
-            while True:
-                if false_count > 1e6:
-                    raise Exception("Area of container is too small for ball size")
-                x = rng_uniform(self._r_container - self._ball[i]._radius)
-                y = rng_uniform(self._r_container - self._ball[i]._radius)
-                while (
-                    np.sqrt(x ** 2 + y ** 2)
-                    >= self._r_container - self._ball[i]._radius
-                ):
-                    x = rng_uniform(self._r_container - self._ball[i]._radius)
-                    y = rng_uniform(self._r_container - self._ball[i]._radius)
-                pos = np.array([x, y])
-                append = False
-                for j in range(0, i):
-                    distance = np.sqrt(
-                        (self._ball[j]._pos[0] - pos[0]) ** 2
-                        + (self._ball[j]._pos[1] - pos[1]) ** 2
-                    )
-                    if distance <= self._ball[i]._radius + self._ball[j]._radius:
-                        append = False
-                        false_count += 1
-                        break
-                    else:
-                        append = True
-                if append or i == 0:
-                    break
-            self._ball[i].set_pos(pos)
+    #%% Simulation Movement
+    ### SIMULATION MOVEMENT METHODS
+    # Gives all the simulation methods for defining movement of balls.
+    # For clarity, next_collision function has been split into several subfunctions.
+    """ next_collision | Sets up and performs the next collision.
+        The logic of the next_collision method should be as follows:
+        1. Find the time to the next collision
+        2. Move the system to that point in time
+        3. Perform the collision. 
+    """
 
-    def generator_random_vel(self, max_speed):
-        """
-        Generates and sets random velocities for all the balls from a uniform 
-            random distribution of x- and y- velocity components.
-        
-        Parameters:
-            max_speed (float): The range of x- and y- velocities component to
-                be generated from.
-        """
-        l = generate_random_vel(self._N_balls, self._random_speed)
-        self.set_vel_ball(l)
-        
-    
-    ### SIMULATION BROWNIAN MOTION INVESTIGATION
-    # Gives all the methods for the Brownian Motion investigation.
-    def brownian_init(self, radius = 5, mass = 10):
-        """ brownian_init | Initialisation of Brownian motion investigation, ball "0".
-            -> Position of ball 0 is initialised to (0,0).
-            -> Remaining balls are randomly distributed in the container.
-            PARAMETERS
-                radius (float, optional): radius of ball being investigated.
-                mass (float, optional): mass of ball being investigated.
-        """
-        self._balls[0].set_pos(np.array([0.0,0.0]))
-        self._balls[0].set_radius(radius)
-        self._balls[0].set_mass(mass)
-        self.generator_random_position(start = 1)
-
-
-# CHECK
-    def set_vel_ball(self, l_vel):
-        """
-        Sets the velocities of all balls with a given list of velocities.
-
-        Parameters:
-            l_vel (list of numpy.ndarray of float): List of the ball velocities
-                in their x- and y- directions.
-        """
-        for i, vel in enumerate(l_vel):
-            self._ball[i].set_vel(vel)
-# CHECK
-    def init_patch(self):
-        """
-        Initialising the balls and the container patches in the animation.
-        Balls and container are drawn using matplotlib.pyplot.Circle objects.
-        """
-        b_patch = []  # List containing ball patches
-        pos_c = self._container._pos
-        r_c = self._r_container
-        c_outline = plt.Circle(pos_c, r_c, ec="b", fill=False, ls="solid")
-
-        for i, ball in enumerate(self._ball):
-            pos_b = ball._pos
-            r_b = ball._radius
-
-            if i != 0:  # Generating random colours for patches
-                b_patch.append(
-                    plt.Circle(
-                        pos_b,
-                        r_b,
-                        ec="black",
-                        fc=tuple(
-                            (np.random.rand(), np.random.rand(), np.random.rand())
-                        ),
-                    )
-                )
-
-            # Setting first ball to be yellow for visibility in tracing
-            # Brownian Motion
-            else:
-                b_patch.append(plt.Circle(pos_b, r_b, ec="black", fc="yellow"))
-        self._b_patch = b_patch
-        self._c_outline = c_outline
-# CHECK
-    def draw(self):
-        """
-        Drawing the current state of the simulation. Does not animate.
-        """
-        self.init_patch()
-
-        plt.figure(num="Simulation State")
-        ax = plt.axes(
-            xlim=(-self._r_container, self._r_container),
-            ylim=(-self._r_container, self._r_container),
-            aspect="equal",
-        )
-
-        ax.add_patch(self._c_outline)  # Drawing container
-        for patch in self._b_patch:
-            ax.add_patch(patch)  # Drawing balls
-
-        plt.show()
-# CHECK
-
-# CHECK
     def init_collision_time(self):
         """
         Initialise next collision time calculations for the first timestep.
@@ -536,71 +429,278 @@ class Simulation:
                 if ball_1 == 0:
                     record = True
 
-        self._collision_count += 1
+        self._N_collisions += 1
 
         if brownian:
             if record:
                 self.record_brownian()
                 
-
-    ### SIMULATION RECORDING METHODS
-    # Gives simulation methods for recording data.
-    def record_dataset(self):
+    #%% Simulation Randomisation
+    ### SIMULATION RANDOMISATION METHODS
+    # Gives all the randomisation methods for the simulation.
+    def generator_random_position(self, start=0):
         """
-        Writes all simulation information into a pandas.DataFrame.
+        Generates random positions for balls such that they do not overlap.
+        
+        Parameters:
+            start (boolean, optional): The starting index of ball to set random 
+                positions for. Used when initialising brownian motion 
+                investigation because the large ball starts at the origin.
 
-        Data recorded:
-            (pandas.DataFrame of [ball, mass, x, y, vx, vy, collision, t, 
-            container]):
-                ball (int): Ball number.
-                mass (float): Mass of ball.
-                x (float): x-coordinate of ball.
-                y (float): y-coordinate of ball.
-                vx (float): x-velocity of ball.
-                vy (float): y-velocity of ball.
-                collision (int): Collision number.
-                t (float): Time of collision.
-                container (boolean): If True, the ball collided with the 
-                    container.
+        Raises:
+            Exception: When the balls cannot fit in the container. Reduce
+                number of balls or increase container radius.
         """
+        for i in range(start, self._N_balls):
+            pos = np.zeros(2)
+            false_count = 0
+            while True:
+                if false_count > 1e6:
+                    raise Exception("Area of container is too small for ball size")
+                x = gen_random_uniform(self._r_container - self._ball[i]._radius)
+                y = gen_random_uniform(self._r_container - self._ball[i]._radius)
+                while (
+                    np.sqrt(x ** 2 + y ** 2)
+                    >= self._r_container - self._ball[i]._radius
+                ):
+                    x = gen_random_uniform(self._r_container - self._ball[i]._radius)
+                    y = gen_random_uniform(self._r_container - self._ball[i]._radius)
+                pos = np.array([x, y])
+                append = False
+                for j in range(0, i):
+                    distance = np.sqrt(
+                        (self._ball[j]._pos[0] - pos[0]) ** 2
+                        + (self._ball[j]._pos[1] - pos[1]) ** 2
+                    )
+                    if distance <= self._ball[i]._radius + self._ball[j]._radius:
+                        append = False
+                        false_count += 1
+                        break
+                    else:
+                        append = True
+                if append or i == 0:
+                    break
+            self._ball[i].set_pos(pos)
+
+    def generator_random_vel(self, max_speed):
+        """
+        Generates and sets random velocities for all the balls from a uniform 
+            random distribution of x- and y- velocity components.
+        
+        Parameters:
+            max_speed (float): The range of x- and y- velocities component to
+                be generated from.
+        """
+        l = generate_random_vel(self._N_balls, self._random_speed)
+        self.set_vel_ball(l)
+        
+    
+    ### SIMULATION BROWNIAN MOTION INVESTIGATION
+    # Gives all the methods for the Brownian Motion investigation.
+    def brownian_init(self, radius = 5, mass = 10):
+        """ brownian_init | Initialisation of Brownian motion investigation, ball "0".
+            -> Position of ball 0 is initialised to (0,0).
+            -> Remaining balls are randomly distributed in the container.
+            PARAMETERS
+                radius (float, optional): radius of ball being investigated.
+                mass (float, optional): mass of ball being investigated.
+        """
+        self._ball[0].set_pos(np.array([0.0,0.0]))
+        self._ball[0].set_radius(radius)
+        self._ball[0].set_mass(mass)
+        self.generator_random_position(start = 1)
+
+
+# CHECK
+    def set_vel_ball(self, l_vel):
+        """
+        Sets the velocities of all balls with a given list of velocities.
+
+        Parameters:
+            l_vel (list of numpy.ndarray of float): List of the ball velocities
+                in their x- and y- directions.
+        """
+        for i, vel in enumerate(l_vel):
+            self._ball[i].set_vel(vel)
+# CHECK
+    def init_patch(self):
+        """
+        Initialising the balls and the container patches in the animation.
+        Balls and container are drawn using matplotlib.pyplot.Circle objects.
+        """
+        b_patch = []  # List containing ball patches
+        pos_c = self._container._pos
+        r_c = self._r_container
+        c_outline = plt.Circle(pos_c, r_c, ec="b", fill=False, ls="solid")
 
         for i, ball in enumerate(self._ball):
-            j = self._collision_count * self._N_balls
-            k = j + i
-            self._dataset[k, 0] = i
-            self._dataset[k, 1] = ball._mass
-            self._dataset[k, 2] = ball._pos[0]
-            self._dataset[k, 3] = ball._pos[1]
-            self._dataset[k, 4] = ball._vel[0]
-            self._dataset[k, 5] = ball._vel[1]
-            self._dataset[k, 6] = self._collision_count
-            self._dataset[k, 7] = self._global_time
+            pos_b = ball._pos
+            r_b = ball._radius
 
-            # Checks if it is a collision with the container
-            if (
-                np.abs(bl.mag_vector(ball._pos) - self._r_container + ball._radius)
-                <= 10e-10
-            ):
-                self._dataset[k, 8] = True
+            if i != 0:  # Generating random colours for patches
+                b_patch.append(
+                    plt.Circle(
+                        pos_b,
+                        r_b,
+                        ec="black",
+                        fc=tuple(
+                            (np.random.rand(), np.random.rand(), np.random.rand())
+                        ),
+                    )
+                )
+
+            # Setting first ball to be yellow for visibility in tracing
+            # Brownian Motion
             else:
-                self._dataset[k, 8] = False
+                b_patch.append(plt.Circle(pos_b, r_b, ec="black", fc="yellow"))
+        self._b_patch = b_patch
+        self._c_outline = c_outline
+# CHECK
+    def draw(self):
+        """
+        Drawing the current state of the simulation. Does not animate.
+        """
+        self.init_patch()
 
-        # Writes the complete data into a pandas.DataFrame
-        if self._collision_count == self._collisions:
-            self._dataset = pd.DataFrame(
-                self._dataset,
-                columns=[
-                    "ball",
-                    "mass",
-                    "x",
-                    "y",
-                    "vx",
-                    "vy",
-                    "collision",
-                    "t",
-                    "container",
-                ],
-            )
+        plt.figure(num="Simulation State")
+        ax = plt.axes(
+            xlim=(-self._r_container, self._r_container),
+            ylim=(-self._r_container, self._r_container),
+            aspect="equal",
+        )
+
+        ax.add_patch(self._c_outline)  # Drawing container
+        for patch in self._b_patch:
+            ax.add_patch(patch)  # Drawing balls
+
+        plt.show()
+# CHECK
+
+    #%% Simulation Recording ✔️
+    ### SIMULATION RECORDING METHODS
+    # Gives simulation methods for recording data.
+
+    def record_pressure(self): # Revisit, and alter.
+        """ record_pressure | Record the pressure for every _(*)_ container collisions.
+            RAISES
+                IndexError: Insufficient number of collisions.
+            RECORDS
+            pd.DataFrame [pressure, t]
+                CONTAINS
+                -> pressure(float): Systemic pressure.
+                -> t(float): Time.
+        """
+        self._pressure, N_collisions = [], 50   # Define (*)'s value.
+        
+        if not isinstance(self._dp_container, np.ndarray):
+            self._dp_container = np.array(self._dp_container)
+        
+        try: max_t = self._dp_container[-1,1]
+        except IndexError:      # No container collisions.
+            print("Insufficient number of collisions for pressure calculation.")
+            self._pressure = np.nan
+            return
+        
+        min_t = max_t * 0.2     # Select final 20% of data at steady-state.
+        start = 0
+        while self._dp_container[start, 1] <= min_t:    # Find new start index.
+            start += 1
+            if start == len(self._dp_container - 1):
+                print("Insufficient number of collisions.")
+                self._pressure = np.nan
+                return
+
+        start += (len(self._dp_container) - start) % N_collisions
+        dp_new = self._dp_container[start:,:]
+        N_pressure = int(len(dp_new)/N_collisions)
+        
+        for i in range(N_pressure):
+            index = i * N_collisions
+            # <Pressure> = Σdp / T (period)
+            pressure = np.sum(dp_new[index:index+N_collisions-1,0] /\
+                (dp_new[index+N_collisions-1,1]-dp_new[index,1])*2*np.pi*self._r_container)    
+            time = (dp_new[index+N_collisions-1,1] + dp_new[index,1]) / 2
+            self._pressure.append([pressure,time])
+        
+        self._pressure = pd.DataFrame(self._pressure, columns = ['pressure', 't'])
+
+    def record_pressure_moyen(self):
+        """ record_pressure_moyen | Records the average systemic pressure.
+            N.B: Must enable Simulation.run(pressure = True).
+            RAISES
+                IndexError: Insufficient number of collisions.
+            RECORDS
+                (float): average steady-state systemic pressure.
+        """
+        if not isinstance(self._dp_container, np.ndarray):
+            self._dp_container = np.array(self._dp_container)
+        
+        try: max_t = self._dp_container[-1,1]
+        except IndexError:      # No container collisions.
+            print("Insufficient number of collisions for pressure calculation.")
+            self._pressure = np.nan
+            return
+        
+        min_t = max_t * 0.2     # Select final 20% of data at steady-state.
+        start = 0
+        while self._dp_container[start, 1] <= min_t:    # Find new start index.
+            start += 1
+            if start == len(self._dp_container - 1):
+                print("Insufficient number of collisions.")
+                self._pressure_moyen = np.nan
+                return
+        min_t = self._dp_container[start,1]
+        # <Pressure> = Σdp / T (period)        
+        self._pressure_moyen = np.sum(self._dp_container[start:,0]) /\
+            ((max_t-min_t) * 2 * np.pi * self._r_container)
+
+    def record_temperature(self):
+        """ record_temperature | Records the temperature of the system, for all collisions.
+            RECORDS
+            -> pd.DataFrame [T, t, collision]
+                CONTAINS
+                -> T(float): Systemic temperature.
+                -> t(float): Time.
+                -> collision(int): Collision number.
+        """
+        KE = np.zeros(self._N_balls)
+        for i, ball in np.ndenumerate(self._ball):
+            KE[i] = 0.5 * ball._mass * np.linalg.norm(ball._vel)**2
+        temperature = (np.sum(KE))/(self._N_balls*spc.Boltzmann)
+        self._temperature.append([temperature, self._global_time, self._N_collisions])
+        
+        if len(self._KE) == self._collisions + 1:
+            self._KE = pd.DataFrame(self._KE, columns=["T","t","collision"])
+
+    def record_temperature_moyen(self):
+        """ record_temperature_moyen | Records the average temperature of the system.
+            RECORDS
+                (float): Average systemic temperature.
+        """
+        self._temperature_moyen = np.mean(self._KE["T"]) # Change potentially
+
+    def record_speed(self):
+        """ record_speed | Record speed for all balls, for all collisions.
+            RECORDS
+                (list(float)): Speed of balls, for all collisions.
+        """
+        for ball in self._ball:
+            self._speed.append(np.sqrt(np.dot(ball._vel,ball._vel)))
+            
+    def record_KE(self):
+        """ record_KE | Record the total_KE of the system, for all collisions.
+            RECORDS
+            -> pd.DataFrame [KE, t, collision]
+                CONTAINS
+                -> KE(float): Systemic kinetic energy.
+                -> t(float): Time.
+                -> collision(int): Collision number.
+        """    
+        total_KE = np.sum([0.5 * self._m_balls * np.dot(ball._vel,ball._vel) for ball in self._ball])
+        self._KE.append([total_KE, self._global_time, self._N_collisions])
+        
+        if len(self._KE) == self._collisions + 1:
+            self._KE = pd.DataFrame(self._KE, columns=['KE','t','collision'])
 
     def record_distance_absolute(self):
         """
@@ -627,318 +727,91 @@ class Simulation:
             rel_dist = bl.mag_vector(self._ball[ball_A]._pos - self._ball[ball_B]._pos)
             self._distance_relative.append(rel_dist)
 
-    def record_speed(self):
-        """
-        Writes the speeds of all balls for all collisions.
-
-        Data Recorded:
-            (list of float): Ball speeds for all collisions.
-        """
-        for ball in self._ball:
-            self._speed.append(bl.mag_vector(ball._vel))
-
-    def record_pressure(self):
-        """
-        Writes pressure values for every 50 container collisions.
-
-        Raises:
-            IndexError: If the number of collisions are insufficient to 
-                calculate pressure.
-
-        Data Recorded:
-            (pandas.DataFrame of [pressure,t]):
-                pressure (float): Pressure of the system.
-                t (float): Time.
-        """
-
-        self._pressure = []
-
-        N_coll = 50  # Number of collisions to average over
-
-        if not isinstance(self._dp_container, np.ndarray):
-            self._dp_container = np.array(self._dp_container)
-
-        try:
-            max_t = self._dp_container[-1, 1]
-        except IndexError:  # No collisions with the container
-            print("Number of collisions insufficient for pressure")
-            self._pressure = np.nan
-            return
-
-        # Only picks the last 80% of data when system achieves steady state
-        min_t = max_t / 5
-        start = 0
-
-        # Determining starting index of pressure data
-        while self._dp_container[start, 1] <= min_t:
-            start += 1
-            if start == len(self._dp_container) - 1:
-                print("Number of collisions insufficient for pressure")
-                self._pressure = np.nan
-                return
-        start += (len(self._dp_container) - start) % N_coll
-        new_dp = self._dp_container[start:, :]
-
-        # Calculating pressure over different times
-        N_pressure = int(len(new_dp) / N_coll)
-        for i in range(N_pressure):
-            index = i * N_coll
-            # Takes sum of momentum change and divide by time period
-            pressure = np.sum(new_dp[index : index + N_coll - 1, 0]) / (
-                (new_dp[index + N_coll - 1, 1] - new_dp[index, 1])
-                * 2
-                * np.pi
-                * self._r_container
-            )
-            time = (new_dp[index + N_coll - 1, 1] + new_dp[index, 1]) / 2
-            self._pressure.append([pressure, time])
-
-        self._pressure = pd.DataFrame(self._pressure, columns=["pressure", "t"])
-
-    def record_pressure_moyen(self):
-        """
-        Records average pressure of the system.
-        Only gives meaningful values if Simulation.run(pressure_moyen=True).
-
-        Raises:
-            IndexError: If the number of collisions are insufficient to 
-                calculate pressure.
-
-        Data Recorded:
-            (float): Average steady state pressure of the system. 
-        """
-        if not isinstance(self._dp_container, np.ndarray):
-            self._dp_container = np.array(self._dp_container)
-
-        try:
-            max_t = self._dp_container[-1, 1]
-        except IndexError:  # No collision with the container
-            print("Number of collisions insufficient for pressure")
-            self._pressure_moyen = np.nan
-            return
-
-        # Only picks the last 80% of data when system achieves steady state
-        min_t = max_t / 5
-        start = 0
-        # Determining starting index of pressure data
-        while self._dp_container[start, 1] <= min_t:
-            start += 1
-            if start == len(self._dp_container) - 1:
-                print("Number of collisions insufficient for pressure")
-                self._pressure_moyen = np.nan
-                return
-        min_t = self._dp_container[start, 1]
-
-        # Average pressure is sum of momentum change divided by time period
-        self._pressure_moyen = np.sum(self._dp_container[start:, 0]) / (
-            (max_t - min_t) * 2 * np.pi * self._r_container
-        )
-
-    def record_KE(self):
-        """
-        Record total kinetic energy of the system for all collisions.
-
-        Data Recorded:
-            (pandas.DataFrame of [KE, t, collision]):
-                KE (float): Kinetic Energy of the system.
-                t (float): Time.
-                collision (int): Collision number.
-        """
-        KE = np.sum(
-            [0.5 * self._m_balls * bl.magsquare_vector(ball._vel) for ball in self._ball]
-        )
-        self._KE.append([KE, self._global_time, self._collision_count])
-
-        # Writing completed data into pandas.DataFrame
-        if len(self._KE) == self._collisions + 1:
-            self._KE = pd.DataFrame(self._KE, columns=["KE", "t", "collision"])
-
-    def record_temperature(self):
-        """
-        Gives temperature of the system at all collision times.
-
-        Data Recorded:
-            (pandas.DataFrame of [T, t, collision]):
-                T (float): Temperature of the system.
-                t (float): Time.
-                collision (int): Collision number.
-        """
-        kb = 1.38064852e-23
-        KE = np.zeros(self._N_balls)
-        for i, ball in enumerate(self._ball):
-            KE[i] = 0.5 * ball._mass * np.linalg.norm(ball._vel) ** 2
-        temperature = (np.sum(KE)) / (self._N_balls * kb)
-
-        self._temperature.append(
-            [temperature, self._global_time, self._collision_count]
-        )
-
-        # Writing the completed data into pandas.DataFrame
-        if len(self._temperature) == self._collisions + 1:
-            self._temperature = pd.DataFrame(
-                self._temperature, columns=["T", "t", "collision"]
-            )
-
-    def record_temperature_moyen(self):
-        """
-        Records average temperature of the system.
-
-        Parameters:
-            df (boolean, optional): If True, converts the data into pandas.
-                DataFrame. Triggered at the end of collisions
-
-        Data Recorded:
-            (float): Average temperature of the system.
-        """
-        self._temperature_moyen = np.mean(self._temperature["T"])
-
     def record_brownian(self, df=False):
+        """ record_brownian | Records data prerequisite for Brownian motion investigation.
+            RECORDS
+            -> pd.DataFrame [x, y, t, collision]
+                CONTAINS
+                -> x(float): x co-ordinate of ball.
+                -> y(float): y co-ordinate of ball.
+                -> t(float): Collision time.
+                -> collision(float): Collision number.
         """
-        Writes dataset required for Brownian Motion investigation.
+        if df == False:
+            self._brownian.append(np.array([self._ball[0]._pos[0],\
+                self._ball[0]._pos[1], self._global_time, self._N_collisions]))
+        else:       # Once data completes, add to pd.DataFrame
+            self._brownian = pd.DataFrame(self._brownian,\
+                columns = ['x','y','t','collision'])
+            
+    def record_dataset(self):
+        """ record_dataset | Write simulation data into pd.DataFrame.
+            RECORDS
+            ->pd.DataFrame [ball, mass, x, y, v_x, v_y, collision, t, container]
+                CONTAINS
+                -> ball(int): Ball number.
+                -> mass(float): Ball mass.
+                -> x(float): Ball x co-ordinate.
+                -> y(float): Ball y co-ordinate.
+                -> v_x(float): Ball x velocity.
+                -> v_y(float): Ball y velocity.
+                -> collision(int): Collision number.
+                -> t(float): Collision time.
+                -> container(boolean): Detect if ball collides with container.
+        """
+        for i, ball in np.ndenumerate (self._ball):
+            j = self._N_collisions * self._N_balls
+            self._dataset[i+j, 0] = i
+            self._dataset[i+j, 1] = ball._mass
+            self._dataset[i+j, 2] = ball._pos[0]
+            self._dataset[i+j, 3] = ball._pos[1]
+            self._dataset[i+j, 4] = ball._vel[0]
+            self._dataset[i+j, 5] = ball._vel[1]
+            self._dataset[i+j, 6] = self._N_collisions
+            self._dataset[i+j, 7] = self._global_time
 
-        Data Recorded:
-            (pandas.DataFrame of [x, y, t, collision, hit]):
-                x (float): x-coordinate of ball.
-                y (float): y-coordinate of ball.
-                t (float): Time of collision.
-                collision (float): Collision number.
-                hit (boolean): True if the collision that took place hit the 
-                    ball under investigation.
-        """
-        if not df:
-            self._brownian.append(
-                np.array(
-                    [
-                        self._ball[0]._pos[0],
-                        self._ball[0]._pos[1],
-                        self._global_time,
-                        self._collision_count,
-                    ]
-                )
+            if (np.sqrt(np.dot(ball._pos,ball._pos)) - self._r_container + ball._radius <= 10e-10):       # Takes into account floating point.
+                self._dataset[i+j, 8] = True
+            else: self._dataset[i+j, 8] = False
+        
+        if self._N_collisions == self._collisions:
+            self._dataset = pd.DataFrame(
+                self._dataset,
+                columns = ['ball','mass','x','y','v_x','v_y','collision',\
+                    't','container']
             )
-        else:  # Writes completed data into pandas.DataFrame
-            self._brownian = pd.DataFrame(
-                self._brownian, columns=["x", "y", "t", "collision"]
-            )
 
-    def record_data_states(
-        self,
-        distance_absolute=False,
-        speed=False,
-        KE=False,
-        test_temperature=False,
-        temperature=False,
-        distance_relative=False,
-        dataset=False,
-    ):
-        """
-        Writes datasets for the simulation.
-
-        Parameters:
-            distance_absolute (boolean, optional): If True, writes dataset for 
-                distances of all balls from the origin for all collsions.
-            speed (boolean, optional): If True, writes dataset for speeds of 
-                all balls for all collisions.
-            KE (boolean, optional): If True, writes dataset for kinetic energy 
-                of the system for all collision times.
-            test_temperature (boolean, optional): If True, writes dataset for 
-                temperature of the system at all collision times.
-            temperature (boolean, optional): If True, writes dataset for 
-                average temperature of the system.
-            distance_relative (boolean, optional): If True, writes dataset for relative 
-                distances between all balls for all collisions.
-            dataset (boolean, optional): If True, writes dataset for all 
-                information of the simulation.
-        """
-        if distance_absolute:
-            self.record_distance_absolute()
-        if speed:
-            self.record_speed()
-        if KE:
-            self.record_KE()
-        if test_temperature or temperature:
-            self.record_temperature()
-        if distance_relative:
-            self.record_distance_relative()
-        if dataset:
-            self.record_dataset()
+    def record_data_states(self,
+                           distance_absolute = False, 
+                           distance_relative = False, 
+                           speed = False, KE = False,
+                           test_temperature = False,
+                           temperature = False,
+                           dataset = False):
+        """ record_data_states | Records simulation datasets.
+            PARAMETERS
+                -> distance_absolute(boolean, optional): If True, writes dataset for all distances of ball to O, for all collisions.
+                -> distance_relative(boolean, optional): If True, writes dataset for all relative distances between balls, for all collisions.
+                -> speed(boolean, optional): If True, does the same as above for speeds of all balls, for all collisions.
+                -> KE(boolean, optional): If True, same as above, for systemic KE.
+                -> temperature(boolean, optional): If True, same as above, for the average temperature of the system (not for all collisions).
+                -> dataset(boolean, optional): If True, same as above, for all simulation information.
+        """      
+        if distance_absolute:   self.record_distance_absolute()
+        if distance_relative:   self.record_distance_relative()
+        if speed:               self.record_speed()
+        if KE:                  self.record_KE()
+        if temperature or test_temperature:         self.record_temperature()
+        if dataset:             self.record_dataset()
 
     def record_data_pressures(self, pressure=False, test_pressure=False):
-        """
-        Writes pressure datasets for the system.
-
-        Parameters:
-            pressure (boolean, optional): If True, writes dataset for average 
-                pressure of the system.
-            test_pressure (boolean, optional): If True, writes dataset for 
-                pressure of every 100 collisions with the container.
-        """
-        if pressure:
-            self.record_pressure_moyen()
-
-        if test_pressure:
-            self.record_pressure()
-
-    def append_data(
-        self,
-        distance_absolute=False,
-        distance_relative=False,
-        test_pressure=False,
-        speed=False,
-        KE=False,
-        test_temperature=False,
-        temperature=False,
-        pressure=False,
-        dataset=False,
-        brownian=False,
-    ):
-        """
-        Appends required data into a dictionary to be returned at the end of 
-        the simulation.
-
-        Parameters:
-            distance_absolute (boolean, optional): If True, appends to dictionary 
-                distance to centre dataset.
-            speed (boolean, optional): If True, appends to dictionary speeds 
-                dataset.
-            KE (boolean, optional): If True, appends to dictionary kinetic 
-                energy dataset.
-            test_temperature (boolean, optional): If True, appends to 
-                dictionary temperature dataset.
-            temperature (boolean, optional): If True, appends to dictionary 
-                average temeprature dataset.
-            distance_relative (boolean, optional): If True, appends to dictionary 
-                relative distances dataset.
-            dataset (boolean, optional): If True, appends to dictionary dataset 
-                for all information of the simulation.
-            brownian (boolean, optional): If True, appends to dictionary 
-                dataset for Brownian Motion investigation.
-
-        """
-        d_output = {}
-
-        if distance_absolute:
-            d_output["distance from centre"] = self._distance_absolute
-        if distance_relative:
-            d_output["relative distance"] = self._distance_relative
-        if test_pressure:
-            d_output["pressure"] = self._pressure
-        if speed:
-            d_output["speed"] = self._speed
-        if KE:
-            d_output["KE"] = self._KE
-        if test_temperature:
-            d_output["temperature"] = self._temperature
-        if temperature:
-            d_output["average temperature"] = self._temperature_moyen
-        if pressure:
-            d_output["average pressure"] = self._pressure_moyen
-        if dataset:
-            d_output["dataset"] = self._dataset
-        if brownian:
-            d_output["brownian"] = self._brownian
-
-        return d_output
+        """ record_data_pressures | Records systemic pressure datasets.
+            PARAMETERS
+                -> pressure(boolean, optional): If True, writes dataset for the average systemic pressure.
+                -> test_pressure(boolean, optional): If True, writes dataset of pressure for every _(*)_ container collisions.
+        """ 
+        if pressure:        self.record_pressure_moyen()
+        if test_pressure:   self.record_pressure()
 
     titleFont =     {'fontname': 'Kinnari', 'size': 13}
     axesFont =      {'fontname': 'Kinnari', 'size': 9}
@@ -949,66 +822,52 @@ class Simulation:
     lineStyleBold = {'linewidth': 1}
     histStyle =     {'facecolor': 'green', 'alpha': 0.5, 'edgecolor': 'black'}
     
+    #%% Simulation Run
     ### SIMULATION RUN METHOD
     # The method to run simulations. 
     def run(
         self,
-        collisions=10,
-        time=0.001,
-        *,
-        animate=False,
-        distance_absolute=False,
-        distance_relative=False,
-        speed=False,
-        pressure=False,
-        dataset=False,
-        test_pressure=False,
-        KE=False,
-        test_temperature=False,
-        temperature=False,
-        brownian=False,
-        progress=True,
+        collisions = 10,            # The number of collisions.
+        time = 0.001,               # Time period between collisions.
+        
+        pressure = False,           # Enable pressure calculations.
+        temperature = True,         # Enable temperature calculations.
+        KE = False,                 # Enable kinetic energy calculations.
+        speed = False,              # Enable speed calculations.
+        brownian = False,           # Enable Brownian motion inveestigation.
+        dataset = False,            # Enable complete dataset.
+        test_pressure = False,
+        test_temperature = False,
+        distance_absolute = False,  # Use ball distance from the origin.
+        distance_relative = False,  # Use relative distances between balls.
+        progress_bar = True,        # Enable progress bar animation in terminal.
+        animate = False             # Enables animation.
     ):
-        """
-        Runs the 2D rigid disc particle collision simulation.
+        """ run | Runs the 2D simulation of colliding particles within the container.
+        PARAMETERS
+        -> collisions (int, optional): number of collisions in the simulation.
+        -> time (float, optional): time period (s) between animation frames.
+            
+        -> pressure (boolean, optional): records pressure for every __ collisions with the wall of the container.
+        -> temperature (boolean, optional): records temperature.
+        -> KE (boolean, optional): records the system KE for every collision.
+        -> speed (boolean, optional): records speed of all balls in all collisions.
+        -> brownian (boolean, optional): records data for Brownian motion.
+        -> dataset (boolean, optional): records dataset of simulation information.
+        -> distance_absolute (boolean, optional): records the distances of all balls from the origin, in all collisions.
+        -> distance_relative (boolean, optional): records the relative distances between all the balls, in all collisions.
+        -> progress_bar (boolean, optional): displays a progress bar.
 
-
-        Parameters:
-            collisions (int, optional): Number of collisions in the simulation.
-            time (float, optional): Time period between animation frames.
-            animate (boolean, optional): If True, produces animation. 
-            distance_absolute (boolean, optional): If True, records distances of 
-                all balls from origin for all collisions.
-            distance_relative (boolean, optional): If True, records relative distances 
-                between all balls for all collisions.
-            speed (boolean, optional): If True, records speeds of all balls for 
-                all collisions.
-            pressure (boolean, optional): If True, records pressure for every 
-                100 collisions with container.
-            dataset (boolean, optional): If True, records dataset of all 
-                information of the simulation.
-            test_pressure (boolean, optional): If True, records average 
-                pressure of the system.
-            KE (boolean, optional): If True, records kinetic energy of the 
-                system for every collision.
-            test_temperature (boolean, optional): If True, records temperature 
-                of the system for every collision.
-            temperature (boolean, optional): If True, records average 
-                temperature of the system.
-            brownian (boolean, optional): If True, records data for Brownian 
-                Motion investigation.
-            progress (boolean, optional): If True, displays the progress bar.
-
-        Returns:
-            d_output (dict): Dictionary that contains the required datasets.
+        RETURNS
+            gloss(dict): Glossary of needed datasets.
         """
         self._global_time = 0
         self._pq = hd.heapdict()
         self._collisions = collisions
 
-        print(
-            f"starting {self._N_balls} balls, r_balls = {self._r_balls}, speed range = {self._random_speed}, r_container = {self._r_container}, {self._collisions} collisions"
-        )
+        print("Starting {self._N_balls} balls, r_balls = {self._r_balls}, \
+            speed range = {self._speed_range}, r_container = {self._r_container}, \
+            {self._collisions} collisions.")
 
         if dataset:
             self._dataset = np.zeros((self._N_balls * (self._collisions + 1), 9))
@@ -1069,12 +928,12 @@ class Simulation:
             dataset=dataset,
         )
 
-        if progress:
+        if progress_bar:
             self._time_epoch = tm.time()
 
         for i in range(2, collisions + 1):
-            if progress:
-                progress_bar(self._time_epoch, i, collisions)
+            if progress_bar:
+                progress(self._time_epoch, i, collisions)
             self.collision_time()
             self.next_event()
             self.move_balls()
@@ -1111,7 +970,7 @@ class Simulation:
         if brownian:
             self.record_brownian(df=True)
 
-        d_output = self.append_data(
+        d_output = self.gloss(
             distance_absolute=distance_absolute,
             distance_relative=distance_relative,
             test_pressure=test_pressure,
@@ -1130,74 +989,17 @@ class Simulation:
 
         return d_output
 
+    #%% Simulation Miscellaneous
+    ### SIMULATION MISCELLANEOUS METHODS
 
-def progress_bar(start_time, it, max_it, desc="Collisions"):
+def gen_random_uniform(maximum_range):
+    """ gen_random_uniform | Provides a uniform distribution centered at (0,0), generating random floats.
+        PARAMETERS
+            maximum_range (float): sets the maximum range for the distribution.
+        RETURNS
+            (float): a random float between [-max_range, max_range].
     """
-    A custom progress bar to show the progress of any iteration.
-
-    Parameters:
-        start_time (float): The time since epoch given by time.time().
-        it (int): Current iteration number.
-        max_it (int): Maximum iteration number.
-        desc (string): Description of the iteration.
-    """
-    current_time = tm.time()
-    t_elapsed = current_time - start_time
-    t_remaining = t_elapsed * max_it / it - t_elapsed
-
-    # Converting time into HH:MM:SS
-    t_elapsed_str = tm.strftime("%H:%M:%S", tm.gmtime(t_elapsed))
-    t_remaining_str = tm.strftime("%H:%M:%S", tm.gmtime(t_remaining))
-
-    percentage = round(it / max_it * 100)
-
-    # Number of blocks in progress bar to be displayed.
-    num_blocks = int(np.floor(percentage / 10))
-    blocks = num_blocks * "\u2588" + (10 - num_blocks) * " "
-
-    desc_str = f"{desc}:"
-
-    if t_elapsed == 0:
-        it_s = "0.00"
-    else:  # Calculating iterations per second
-        it_s = round(it / t_elapsed, 2)
-
-    progress = f"\r|{blocks}| {percentage}% | {desc_str} {it}/{max_it} | {t_elapsed_str}/{t_remaining_str} | {it_s}it/s"
-
-    if it == max_it:
-        progress += "\n"
-    sys.stdout.write(progress)
-
-
-def rng_uniform(max_range):
-    """
-    Generates random float values given from a uniform distrubition centred at 
-        0.
-    
-    Parameters:
-        max_range (float): The maximum range of the uniform distribution.
-    
-    Returns:
-        (float): A random float from [-max_range, max_range]
-
-    """
-    return random.uniform(-max_range, max_range)
-# CHECK
-
-def temperature_from_rms_speed(rms_speed, m):
-    """
-    Calculates temperature from the root-mean-squared speed of particles.
-
-    Parameters:
-        rms_speed (float): Root-mean-squared speed of the particles.
-        m (float): Mass of the particles.
-    
-    Returns:
-        (float): The temperature of the system.
-    """
-    k = 1.38064852e-23
-    return 0.5 * m * rms_speed ** 2 / k
-
+    return np.random.uniform(-maximum_range,maximum_range)
 
 def generate_random_vel(N_balls, random_speed_range):
     """
@@ -1216,121 +1018,96 @@ def generate_random_vel(N_balls, random_speed_range):
     l = []
     for _ in range(N_balls):
         l.append(
-            np.array([rng_uniform(random_speed_range), rng_uniform(random_speed_range)])
+            np.array([gen_random_uniform(random_speed_range), gen_random_uniform(random_speed_range)])
         )
     return l
 
-
-def equal_sampling_brownian(brownian_data, N_samples):
+def progress(start_time, iterations, all_iterations, desc="Collisions"):
+    """ progress | A progress bar to show the progression of an operation.
+    PARAMETERS
+        start_time
+        it
+        max_it
+        desc
     """    
-    Samples the position of a ball at regular time intervals.
-    
-    Parameters:
-        brownian_data (pandas.DataFrame of [x, y, t]): All position data of a 
-            ball at times when it experiences a collision.
-                x (float): The x-coordinates of the ball.
-                y (float): The y-coordinates of the ball.
-                t (float): The time of collision.
-        N_samples (int): The number of samples to be obtained from the data.
-    
-    Returns:
-        (pandas.DataFrame of [x, y, t]): The position data of a ball at regular 
-            time intervals.
-                x (float): The x-coordinates of the ball.
-                y (float): The y-coordinates of the ball.
-                t (float): The time (equally sampled).
+    current_time = tm.time()
+
+    t_elapsed = current_time - start_time
+    t_remaining = t_elapsed * all_iterations / iterations - t_elapsed
+    t_elapsed_str = tm.strftime("%H:%M:%S", tm.gmtime(t_elapsed))
+    t_remaining_str = tm.strftime("%H:%M:%S", tm.gmtime(t_remaining))
+
+    percentage = round(iterations / all_iterations * 100)
+    num_blocks = int(np.floor(percentage / 5))
+    blocks = num_blocks * "\u2588" + (20 - num_blocks) * " " # Alter
+    desc_str = f"{desc}:"
+
+    # Calculating iterations per second
+    if t_elapsed == 0:  it_s = "0.00"
+    else:               it_s = round(iterations / t_elapsed, 2)
+
+    progress = f"\r|{blocks}| {percentage}% | {desc_str} {iterations}/{all_iterations} | {t_elapsed_str}/{t_remaining_str} | {it_s}it/s"
+
+    if iterations == all_iterations:    progress += "\n"
+    sys.stdout.write(progress)
+
+def linear_inter(x, x_1, x_2, y_1, y_2):
+    """ linear_inter | Returns y-value for two given linear equations.
     """
-    x_pos = np.array(brownian_data["x"])
-    y_pos = np.array(brownian_data["y"])
-    time = np.array(brownian_data["t"])
+    return y_1 + (y_2 - y_1) / (x_2 - x_1) * (x - x_1)
 
-    x_samples = np.zeros(N_samples)
-    y_samples = np.zeros(N_samples)
-    t_samples = np.zeros(N_samples)
+def brownian_equal_samples(self, data, N_samples):
+    """ brownian_equal_samples | Samples positions of the ball given regular time intervals.
+    PARAMETERS
+        data: pd.DataFrame [x,y,t]
+        -> x(float): Ball's x co-ordinate.
+        -> y(float): Ball's y co-ordinate.
+        -> t(float): Collision time.
+        N_samples(int): Number of samples from data.
+    RETURNS
+        pd.DataFrame [x,y,t]
+        -> x(float): Ball's x co-ordinate.
+        -> y(float): Ball's y co-ordinate.
+        -> t(float): Equally-sampled collision times.
+    """
+    x_pos, x_samp = np.array(data["x"]), np.zeros(N_samples)
+    y_pos, y_samp = np.array(data["y"]), np.zeros(N_samples)
+    time, t_samp = np.array(data["t"]), np.zeros(N_samples)
 
-    dt = (time[-1] - time[0]) / (N_samples + 1)
-
-    index = 0
-    i = 0
-
-    # Sampling the positions using time interval dt
+    dt = (time[-1] - time[0])/(N_samples + 1)
+    index, i = 0, 0
+    
+    # Sample time positions for interval dt. Use np.linspace
     while i < N_samples:
-        t_sampling = time[0] + i * dt
-
-        if t_sampling == time[index]:
-            x_samples[i] = x_pos[index]
-            y_samples[i] = y_pos[index]
-            t_samples[i] = time[index]
+        if (time + i * dt) == time[index]:
+            x_samp[i], y_samp[i] = x_pos[index], y_pos[index]
+            t_samp[i] = time[index]; i += 1
+        else:       # Time exceeds next indexed value.
+            x1, x2 = x_pos[index], x_pos[index + 1]
+            y1, y2 = y_pos[index], y_pos[index + 1]
+            t1, t2 = time[index], time[index + 1]
+            
+            x, y = self.linear_inter(t_samp,t1,t2,x1,x2), self.linear_inter(t_samp,t1,t2,y1,y2)
+            x_samp[i], y_samp[i], t_samp[i] = x, y, t_samp
             i += 1
-        else:
-            # Time is larger than next indexed value
-            if t_sampling >= time[index + 1]:
-                index += 1
-            # Time is between the two indexed values
-            else:
-                t1 = time[index]
-                t2 = time[index + 1]
-                x1 = x_pos[index]
-                x2 = x_pos[index + 1]
-                y1 = y_pos[index]
-                y2 = y_pos[index + 1]
+            
+    return pd.DataFrame([x_samp, y_samp, t_samp]).transpose().rename(columns=\
+        {0: "x", 1: "y", 2: "t"})
 
-                # Using a linear equation to interpolate
-                x = linear_interpolation(t_sampling, t1, t2, x1, x2)
-                y = linear_interpolation(t_sampling, t1, t2, y1, y2)
-                x_samples[i] = x
-                y_samples[i] = y
-                t_samples[i] = t_sampling
-                i += 1
-
-    df = pd.DataFrame([x_samples, y_samples, t_samples])
-    df = df.transpose()
-    df = df.rename(columns={0: "x", 1: "y", 2: "t"})
-    return df
-
-
-def linear_interpolation(x, x1, x2, y1, y2):
+def brownian_paths_tracer(data):
+    """ brownian_paths_tracer | Trace out the path(s) of a given ball with positional data.
+    PARAMETERS
+        data: pd.DataFrame [x,y] - the time-ordered positional data at collision.
+        -> x(float): Ball's x co-ordinate.
+        -> y(float): Ball's y co-ordinate.
+    RETURNS
+        list(plt.Line2D): List of plottable Line2D objects.
     """
-    Returns a y-value given a linear equation.
-
-    Parameters:
-        x (float): The x-value for the returned result.
-        x1 (float): The x-value of known point 1.
-        x2 (float): The x-value of known point 2.
-        y1 (float): The y-value of known point 1.
-        y2 (float): The y-value of known point 2.
-
-    Returns:
-        (float): The y-value at point x in the linear equation.
-    """
-    return y1 + (y2 - y1) / (x2 - x1) * (x - x1)
-
-
-def trace_paths_brownian(data):
-    """
-    Traces out the path of a ball using given position data.
-
-    Parameters:
-        data (pandas.DataFrame of [x,y]): The time ordered position data of a 
-            ball at times of collision.
-                x (float): The x-coordinate of the ball.
-                y (float): The y-coordinate of the ball.
-    
-    Returns:
-        (list of matplotlib.pyplot.Line2D): The list of Line2D objects that can 
-            be plotted on a graph using matplotlib.pyplot
-    """
-    x = data["x"]
-    y = data["y"]
-    l_path = []
-
+    x, y, path_list = ["x"], ["y"], []
     for i in range(1, len(x)):
-        path = plt.Line2D(
-            xdata=[x[i], x[i - 1]], ydata=[y[i], y[i - 1]], color="0.01", alpha=0.2,
-        )
-        l_path.append(path)
-
-    return l_path
-
+        path = plt.Line2D(xdata=[x[i],x[i-1]], ydata=[y[i],y[i-1]],
+                            color='0.01', alpha=0.02)
+        path_list.append(path)
+    return path_list
 
 

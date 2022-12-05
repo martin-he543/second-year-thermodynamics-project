@@ -48,7 +48,7 @@ sim_brownian = sim.Simulation(
     m_balls=m_ball,
     random_speed_range=random_speed_range,
 )
-sim_brownian.init_brownian(radius=r_big, mass=m_big)
+sim_brownian.brownian_init(radius=r_big, mass=m_big)
 brownian_test = sim_brownian.run(collisions=collisions, brownian=True, animate=True)[
     "brownian"
 ]
