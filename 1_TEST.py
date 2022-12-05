@@ -170,7 +170,7 @@ print("Plotting Graph 4 of 4")
 plt.figure(num="Distance of Balls from Origin")
 sns.set(context="paper", style="darkgrid", palette="muted")
 
-sns.displot(dist_centre_test, kde=False, norm_hist=True)
+sns.distplot(dist_centre_test, kde=False, norm_hist=True)
 
 plt.title("Distance Distribution from Origin")
 plt.xlabel("Ball Distance from Origin $/m$")
