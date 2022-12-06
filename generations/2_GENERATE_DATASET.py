@@ -55,4 +55,3 @@ for r_ball in l_r_ball:
                     print(f"Generated {FILE_PATH}")
 
 print("End of Script")
-

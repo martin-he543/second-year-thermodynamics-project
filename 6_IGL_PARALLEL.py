@@ -60,10 +60,10 @@ def run_simulations(parameter):
     r_container = parameter[2]
     speed = parameter[3]
     sim_IGL = sim.Simulation(
-        N_ball=N_ball,
+        N_balls=N_ball,
         r_container=r_container,
-        r_ball=r_ball,
-        m_ball=m_ball,
+        r_balls=r_ball,
+        m_balls=m_ball,
         random_speed_range=random_speed_range,
     )
     sim_IGL.set_vel_ball(speed)

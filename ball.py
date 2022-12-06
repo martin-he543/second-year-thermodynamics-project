@@ -209,3 +209,28 @@ class Container(Ball): # Inherit the ball class for the container class.
         self._radius = radius
         self._mass = mass
         self._count = -1
+
+def magsquare_vector(vector):
+    """
+    Calculates the magnitude squared of a vector.
+
+    Arguments:
+        vector (numpy.ndarray of float): Vector.
+    
+    Returns:
+        (float): The magnitude squared of the vector.
+    """
+    return np.dot(vector, vector)
+
+
+def mag_vector(vector):
+    """
+    Calculates the magnitude of a vector.
+
+    Arguments:
+        vector (numpy.ndarray of float): Vector.
+    
+    Returns:
+        (float): The magnitude of the vector.
+    """
+    return np.sqrt(magsquare_vector(vector))
