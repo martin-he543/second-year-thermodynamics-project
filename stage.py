@@ -1,12 +1,6 @@
 import simulation as sim
-import numpy as np
-import scipy.constants as spc
 import matplotlib.pyplot as plt
 import seaborn as sns
-import pandas as pd
-import itertools as it
-import heapdict as hd
-import time as tm
 
 m_balls_animation = 5e-26
 r_balls_animation = 0.2
@@ -15,18 +9,42 @@ collisions_animation = 500
 r_container_animation = 10
 random_speed_range_animation = 500
 
+m_balls_distance = 5e-26
+r_balls_distance = 0.2
+N_balls_distance = 50
+collisions_distance = 5000
+r_container_distance = 10
+random_speed_range_distance = 500
 
-sim_test_animation = sim.Simulation(N_balls=N_balls_animation, r_container=\
-    r_container_animation, r_balls=r_balls_animation, m_balls=m_balls_animation,
-    random_speed_range=random_speed_range_animation)
-run = sim_test_animation.run(collisions=collisions_animation, animate=True,
-                                sim_title="1. Simulation")
+#%% Stage Animation
+### STAGE ANIMATION
+sim_test_animation = sim.Simulation(m_balls=m_balls_animation, 
+    r_balls=r_balls_animation, N_balls=N_balls_animation, r_container=
+    r_container_animation, random_speed_range=random_speed_range_animation)
+
+run_animation = sim_test_animation.run(collisions=collisions_animation, 
+                                       animate=True, sim_title="1. Simulation")
+
+#%% Stage Distance Calculations
+### STAGE DISTANCE CALCULATIONS
+
+sim_test = sim.Simulation(N_balls=N_balls_distance,
+                          r_container=r_container_distance,
+                          r_balls=r_balls_distance, m_balls=m_balls_distance,
+                          random_speed_range=random_speed_range_distance)
+
+run_distance = sim_test.run(collisions=collisions_distance, KE=True,
+                            distance_absolute=True, distance_relative=True)
+
+dist_centre_test = run_distance["distance from centre"]
+dist_rel_test = run_distance["relative distance"]
+
+
 
 print("Plotting Graph 3 of 4")
 
 plt.figure(num="Relative Distance between Balls")
 sns.set(context="paper", style="darkgrid", palette="muted")
-
 sns.displot(dist_rel_test)
 
 plt.title("Relative Ball Distance Distribution")

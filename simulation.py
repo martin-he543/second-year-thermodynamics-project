@@ -15,6 +15,7 @@ import ball as bl
 import numpy as np
 import scipy.constants as spc
 import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
 import itertools as it
 import heapdict as hd
@@ -890,6 +891,9 @@ def progress(start_time, iterations, all_iterations, description="Collision"):
 
     if iterations == all_iterations:    progress += "\n"
     print ("\033[A \033[A");            sys.stdout.write(progress)
+
+
+
     #%% Simulation Miscellaneous ✔️
     ### SIMULATION MISCELLANEOUS METHODS
 
