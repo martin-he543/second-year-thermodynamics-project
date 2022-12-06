@@ -1,15 +1,7 @@
+martin@epsilon-delta:~/workspace/second-year-thermodynamics-project$ /bin/python3 /home/martin/workspace/second-year-thermodynamics-project/remove_whitespace.py
 """
     SIMULATION MODULE (import simulation as sm) | Created by 𝑀𝒶𝓇𝓉𝒾𝓃 𝒜. 𝐻𝑒, 2022.11.20
     For the simulation of elastic collisions of balls with others, and container.
-    1. Simulation Initialisation
-    2. Simulation Information
-    3. Simulation Property
-    4. Simulation Movement
-    5. Simulation Randomisation
-    6. Simulation Recording
-    7. Simulation Miscellaneous
-    8. Simulation Run
-    9. Simulation Plots
 """
 import ball as bl
 import numpy as np
@@ -19,7 +11,7 @@ import pandas as pd
 import itertools as it
 import heapdict as hd
 import time as tm
-import sys
+import sys, os, random
 
 titleFont =     {'fontname': 'Kinnari', 'size': 13}
 axesFont =      {'fontname': 'Kinnari', 'size': 9}
@@ -933,3 +925,4 @@ class Event(tuple):
     def count_B(self):      return self[3]
     def dt(self):           return self[4]
     def pair(self):         return [self[0], self[1]]
+martin@epsilon-delta:~/workspace/second-year-thermodynamics-project$ 

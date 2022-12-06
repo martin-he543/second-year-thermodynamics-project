@@ -5,7 +5,7 @@ import numpy as np
 from copy import deepcopy
 
     #%% Ball Initialisation
-
+    
 class Ball:
     time = 0
     def __init__(
@@ -22,14 +22,14 @@ class Ball:
         self._dp = 0                        # Change in momentum of the ball.
         self._count = count                 # Count of the ball.
         return
-
+    
     #%% Ball Information
     ### BALL INFORMATION METHODS
     # Methods containing vital information on balls.
     def __repr__(self):
         return ("BALL PROPERTIES: mass = {self._mass}, radius = {self._radius},\
                  position = {self._pos}, velocity = {self._vel}")
-
+        
     def __str__(self):
         return ("BALL: m = {self._mass}; r = {self._radius}; x = {self._pos};\
                  v = {self._vel}")
@@ -41,7 +41,7 @@ class Ball:
         """ time_to_collision | Calculate the time until the next collision
             between this ball and another one, or the container.
             RETURNS
-                time (float): the time to the next collision for a ball.
+                time (float): the time to the next collision for a ball.    
             VARIABLES
                 R: distance between centre of ball, and centre of other object
                    during collision.
@@ -61,7 +61,7 @@ class Ball:
         """
         r, v = self._pos - other._pos, self._vel - other._vel
         a, b  = np.dot(v,v), 2 * np.dot(r,v)
-
+        
         # Both balls are stationary (w.r.t. each other).
         if a == 0:  return np.inf
         else:
@@ -73,8 +73,8 @@ class Ball:
             if not isinstance(other,Container):
                 if np.abs(c) <= 10e-13: return np.inf
                     # Encounters a floating point error - no collision.
-
-            if discrim < 0:
+    
+            if discrim < 0: 
                 # Complex dt - no collision.
                 return np.inf
             elif discrim == 0:              # Repeated root
@@ -83,7 +83,7 @@ class Ball:
             elif discrim > 0:               # Two real roots - dt_1, dt_2.
                 dt_1 = (-b + np.sqrt(discrim))/(2*a)
                 dt_2 = (-b - np.sqrt(discrim))/(2*a)
-
+                
                 if isinstance(other,Container): return np.amax(np.array([dt_1,dt_2]))
                 else:
                     if dt_1 <= 0 and dt_2 <= 0: return np.inf
@@ -100,11 +100,11 @@ class Ball:
         # Transform the positions relative to each other.
         r = self._pos - other._pos
         v = self._vel - other._vel
-
+        
         # Resolve the velocity into // and |_ to the line of centres.
         u_self_par = np.vdot(self._vel, r) / np.dot(r,r) * r
         u_self_per = self._vel - u_self_par
-
+        
         # Consider collisions with the container.
         if isinstance(other,Container):
             v_self_par,v_other_par = -u_self_par, np.zeros(2)
@@ -112,33 +112,33 @@ class Ball:
             self.set_vel(v_self_par + v_self_per)
             other.set_vel(np.zeros(2))
             self._count += 1; other._count += 1
-
+            
             vel_f = self._vel
             vel_i = self._vel
             dv = vel_f - vel_i
             self._dp = dv * self._mass
-
+            
         # Consider collisions with another ball.
         else:
             m1,m2 = self._mass, other._mass
             # self.set_vel(self._vel - ((2*m2)/(m1*m2))*(np.dot(v,r)/np.dot(r,r))*r)
             # other.set_vel(other._vel - ((2*m1)/(m1*m2))*(np.dot(-v,-r)/np.dot(-r,-r))*(-r))
-
+            
             # Only care about parallel components in 1D. Consider relative velocities.
             u_other_par = np.vdot(other._vel, r) / np.dot(r,r) * r
             u_other_per = other._vel - u_other_par
             u_self_par_relative = u_self_par - u_other_par
             v_self_par_relative = (m1 - m2)/(m1 + m2) * u_self_par_relative
-
+            
             v_self_par = v_self_par_relative + u_other_par
             v_other_par = u_self_par - u_other_par + v_self_par
             v_self_per, v_other_per = u_self_per, u_other_per
             self.set_vel(v_self_par + v_self_per)
             other.set_vel(v_other_par + v_other_per)
             self._count += 1; other._count += 1
+            
 
-
-
+            
     def move(self,dt):
         """ move | Move the ball to a new position: r' = r + v * dt.
         """
@@ -150,40 +150,40 @@ class Ball:
         copy | Performs a deepcopy of the ball.
         RETURNS
             (Ball): an identical Ball object, located within itself.
-
+            
         mass | Return the mass of the ball.
         RETURNS
             mass (float): the mass of the ball.
-
+            
         radius | Return the radius of the ball.
         RETURNS
             radius (float): the radius of the ball.
-
+            
         position | Return the current position.
-        RETURNS
-            position (np.ndarray w/ float values): the current position of the
+        RETURNS 
+            position (np.ndarray w/ float values): the current position of the 
                                                    centre of the ball.
-
+                                                   
         velocity | Return the current velocity.
         RETURNS
-            velocity (np.ndarray w/ float values): the current 2D velocity of
+            velocity (np.ndarray w/ float values): the current 2D velocity of 
                                                    the ball.
         set_mass | Define the new mass of the ball.
         < PARAMETERS >
         -> mass (float): the new defined mass of the ball.
-
+            
         set_radius | Define the new radius of the ball.
         < PARAMETERS >
         -> radius (float): the new defined radius of the ball.
-
+            
         set_pos | Define the new position of the ball.
         < PARAMETERS >
-        -> pos (np.ndarray(contains: float)): the new defined position of
+        -> pos (np.ndarray(contains: float)): the new defined position of 
                                               the ball.
-
+            
         set_vel | Define the new velocity of the ball.
         < PARAMETERS >
-        -> vel (np.ndarray(contains: float)): the new defined velocity of
+        -> vel (np.ndarray(contains: float)): the new defined velocity of 
                                               the ball.
     """
     def copy(self):     return deepcopy(self)

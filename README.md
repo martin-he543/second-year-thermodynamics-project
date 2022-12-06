@@ -27,15 +27,15 @@ This Python file, also unsurprisingly, is optional. It contains a few extra simu
 #### ```simulation.py [Required]```
 Simulation.py houses the Simulation class, which controls the running of the simulation. It is split neatly into nine hopefully easy-to-read sections, which can be described as the following:
 
-- **Ball Initialisation:** contains the `__init__` method.
-- **Ball Information:** contains `__repr__`, `__str__`, and `glossary`.
-- **Ball Property:** contains corresponding functions for returning information.
-- **Ball Movement:** contains the `next_collision` function, essentially.
-- **Ball Randomisation:** contains randomisation functions.
-- **Ball Recording:** contains the prefix `record_`, and records.
-- **Ball Miscellaneous:** contains functions that don't fit elsewhere.
-- **Ball Run:** contains the `run` method. 
-- **Ball Plots:** produces optional plots of the simulations.
+- **Initialisation:** contains the `__init__` method.
+- **Information:** contains `__repr__`, `__str__`, and `glossary`.
+- **Property:** contains corresponding functions for returning information.
+- **Movement:** contains the `next_collision` function, essentially.
+- **Randomisation:** contains randomisation functions.
+- **Recording:** contains the prefix `record_`, and records.
+- **Miscellaneous:** contains functions that don't fit elsewhere.
+- **Run:** contains the `run` method. 
+- **Plots:** produces optional plots of the simulations.
 
 With these functions the following tests can be performed:
 - **Task 5:** Rigid Spherical Collisions in a Container
