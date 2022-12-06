@@ -644,7 +644,7 @@ class Simulation:
             self._distance_relative.append(distance_relative)
 
     def record_brownian(self, df=False):
-        """ record_brownian | Records data prerequisite for Brownian motion investigation.
+        """ record_brownian | Records data required for Brownian investigation.
             RECORDS
             -> pd.DataFrame [x, y, t, collision]
                 CONTAINS

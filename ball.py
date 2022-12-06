@@ -1,63 +1,11 @@
-def magsquare_vector(vector):
-    """
-    Calculates the magnitude squared of a vector.
-
-    Arguments:
-        vector (numpy.ndarray of float): Vector.
-    
-    Returns:
-        (float): The magnitude squared of the vector.
-    """
-    return np.dot(vector, vector)
-
-
-def mag_vector(vector):
-    """
-    Calculates the magnitude of a vector.
-
-    Arguments:
-        vector (numpy.ndarray of float): Vector.
-    
-    Returns:
-        (float): The magnitude of the vector.
-    """
-    return np.sqrt(magsquare_vector(vector))
-
-
-def projection(a, b):
-    """
-    Calculates the projection vector of a on b.
-
-    Arguments:
-        a (numpy.ndarray of float): Vector to find projection of.
-        b (numpy.ndarray of float): Vector to be projected on.
-    
-    Returns:
-        (numpy.ndarray of float): The projection vector of a on b.
-    """
-    magsquare_b = magsquare_vector(b)
-    return np.vdot(a, b) / magsquare_b * b
-
-
-def rejection(a, b):  # writing rejection vector of a on b
-    """
-    Calculates the rejection vector of a on b.
-
-    Arguments:
-        a (numpy.ndarray of float): Vector to find rejection of.
-        b (numpy.ndarray of float): Vector to be rejected on.
-    
-    Returns:
-        (numpy.ndarray of float): The rejection vector of a on b.
-    """
-    return a - projection(a, b)
-
 """ BALL MODULE (import ball as bl) | Created by 𝑀𝒶𝓇𝓉𝒾𝓃 𝒜. 𝐻𝑒, 2022.11.20
     For the simulation of elastic collisions of balls with others, and container.
 """
 import numpy as np
 from copy import deepcopy
 
+    #%% Ball Initialisation
+    
 class Ball:
     time = 0
     def __init__(
@@ -75,36 +23,41 @@ class Ball:
         self._count = count                 # Count of the ball.
         return
     
+    #%% Ball Information
     ### BALL INFORMATION METHODS
-    
+    # Methods containing vital information on balls.
     def __repr__(self):
-        return ("Ball properties: mass = {self._mass}, radius = {self._radius}, position = {self._pos}, velocity = {self._vel}")
+        return ("BALL PROPERTIES: mass = {self._mass}, radius = {self._radius},\
+                 position = {self._pos}, velocity = {self._vel}")
+        
     def __str__(self):
-        return ("Ball: m = {self._mass}; r = {self._radius}; x = {self._pos}; v = {self._vel}")
+        return ("BALL: m = {self._mass}; r = {self._radius}; x = {self._pos};\
+                 v = {self._vel}")
 
+    #%% Ball Movement
     ### BALL MOVEMENT METHODS
-    
+    # Methods to help the balls move.
     def time_to_collision(self,other):
-        """
-        Calculate the time until the next collision between this ball and another one, or the container.
-        RETURNS
-            time (float): the time to the next collision for a ball.
-            
-        VARIABLES
-            R: distance between centre of ball, and centre of other object during collision.
-            a, b, c: terms in the quadratic equation for calculation of dt.
-            discrim: calculation of the discriminant for dt.
-            
-        CLASSIFICATION OF SOLUTIONS TO dt
-        -> No solution exists for Δ < 0.
-        -> A unique solution exists for Δ = 0.
-            - If the value of dt > 0, dt is a valid solution.
-            - If the value of dt <= 0, dt does not exist.
-        -> Two unique solutions exist for Δ > 0.
-            - If both dt values are > 0, then the next collision is the smallest of the two.
-            - If both dt values are <= 0, dt does not exist.
-            - If dt_1 <= 0, but dt_2 > 0, return dt_2.
-            - If dt_2 <= 0, but dt_1 > 0, return dt_1.
+        """ time_to_collision | Calculate the time until the next collision
+            between this ball and another one, or the container.
+            RETURNS
+                time (float): the time to the next collision for a ball.    
+            VARIABLES
+                R: distance between centre of ball, and centre of other object
+                   during collision.
+                a, b, c: terms in the quadratic equation for calculation of dt.
+                discrim: calculation of the discriminant for dt.
+            CLASSIFICATION OF SOLUTIONS to dt
+            -> No solution exists for Δ < 0.
+            -> A unique solution exists for Δ = 0.
+                - If the value of dt > 0, dt is a valid solution.
+                - If the value of dt <= 0, dt does not exist.
+            -> Two unique solutions exist for Δ > 0.
+                - If both dt values are > 0, then the next collision is the
+                    smallest of the two.
+                - If both dt values are <= 0, dt does not exist.
+                - If dt_1 <= 0, but dt_2 > 0, return dt_2.
+                - If dt_2 <= 0, but dt_1 > 0, return dt_1.
         """
         r, v = self._pos - other._pos, self._vel - other._vel
         a, b  = np.dot(v,v), 2 * np.dot(r,v)
@@ -114,7 +67,7 @@ class Ball:
         else:
             if isinstance(other,Container): R = self._radius - other._radius
             else:                           R = self._radius + other._radius
-            
+
             c = np.dot(r,r) - R**2
             dt = -b/(2*a); discrim = b**2 - 4*a*c
             if not isinstance(other,Container):
@@ -139,10 +92,10 @@ class Ball:
                     elif dt_2 < 0:              return dt_1
 
     def collide(self, other):
-        """
-        Make the changes to the velocities of the ball, and the other one due to a collision.
-        PARAMETERS
-            other (Ball): the other ball which collides with this one.
+        """ collide | Make the changes to the velocities of the ball, and the
+                      other one due to a collision.
+        < PARAMETERS >
+        -> other (Ball): the other ball which collides with this one.
         """
         # Transform the positions relative to each other.
         r = self._pos - other._pos
@@ -191,43 +144,47 @@ class Ball:
         """
         self.set_pos(self._pos + dt * self._vel)
 
-
+    #%% Ball Attributes
     ### BALL ATTRIBUTE METHODS
     """ Various properties and attributes of the ball are returned/altered.
         copy | Performs a deepcopy of the ball.
         RETURNS
             (Ball): an identical Ball object, located within itself.
-        
+            
         mass | Return the mass of the ball.
         RETURNS
             mass (float): the mass of the ball.
-        
+            
         radius | Return the radius of the ball.
         RETURNS
             radius (float): the radius of the ball.
-        
+            
         position | Return the current position.
         RETURNS 
-            position (np.ndarray w/ float values): the current position of the centre of the ball.
-        
+            position (np.ndarray w/ float values): the current position of the 
+                                                   centre of the ball.
+                                                   
         velocity | Return the current velocity.
         RETURNS
-            velocity (np.ndarray w/ float values): the current 2D velocity of the ball.
-        
+            velocity (np.ndarray w/ float values): the current 2D velocity of 
+                                                   the ball.
         set_mass | Define the new mass of the ball.
-        PARAMETERS
-            mass (float): the new defined mass of the ball.
+        < PARAMETERS >
+        -> mass (float): the new defined mass of the ball.
             
         set_radius | Define the new radius of the ball.
-        PARAMETERS
-            radius (float): the new defined radius of the ball.
+        < PARAMETERS >
+        -> radius (float): the new defined radius of the ball.
             
         set_pos | Define the new position of the ball.
-        PARAMETERS
-            pos (np.ndarray(contains: float)): the new defined position of the ball.
+        < PARAMETERS >
+        -> pos (np.ndarray(contains: float)): the new defined position of 
+                                              the ball.
             
         set_vel | Define the new velocity of the ball.
-        PARAMETERS
+        < PARAMETERS >
+        -> vel (np.ndarray(contains: float)): the new defined velocity of 
+                                              the ball.
     """
     def copy(self):     return deepcopy(self)
     def mass(self):     return self._mass
@@ -241,12 +198,11 @@ class Ball:
     def set_vel(self,vel):          self._vel = np.array(vel)
 
 class Container(Ball): # Inherit the ball class for the container class.
-    """ CONTAINER CLASS
-        This is a Container class. The container is used to enclose the balls in
-        the 2D rigid disc collision.
-        PARAMETERS
-            radius (float): the radius of the container.
-            mass (float): the mass of the container.
+    """ CONTAINER CLASS | This is a Container class. The container is used to
+        enclose the balls in the 2D rigid disc collision.
+        < PARAMETERS >
+        -> radius (float): the radius of the container.
+        -> mass (float): the mass of the container.
     """
     def __init__(self, radius=10, mass=100):
         super().__init__()
