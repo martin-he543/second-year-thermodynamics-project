@@ -756,25 +756,27 @@ class Simulation:
         distance_absolute = False,  # Use ball distance from the origin.
         distance_relative = False,  # Use relative distances between balls.
         progress_bar = True,        # Enable progress bar animation in terminal.
-        animate = False             # Enables animation.
-    ):
+        animate = False,            # Enables animation.
+        
+        sim_title = "Thermodynamics Simulation, Animated"):
         """ run | Runs the 2D simulation of colliding particles within the container.
         PARAMETERS
-        -> collisions (int, optional): number of collisions in the simulation.
-        -> time (float, optional): time period (s) between animation frames.
+        -> collisions (int, optional): Number of collisions in the simulation.
+        -> time (float, optional): Time period (s) between animation frames.
 
-        -> pressure (boolean, optional): records pressure for every __ collisions
+        -> pressure (boolean, optional): Records pressure for every __ collisions
                                          with the wall of the container.
-        -> temperature (boolean, optional): records temperature.
-        -> KE (boolean, optional): records the system KE for every collision.
-        -> speed (boolean, optional): records speed of all balls in all collisions.
-        -> brownian (boolean, optional): records data for Brownian motion.
-        -> dataset (boolean, optional): records dataset of simulation information.
-        -> distance_absolute (boolean, optional): records the distances of all
+        -> temperature (boolean, optional): Records temperature.
+        -> KE (boolean, optional): Records the system KE for every collision.
+        -> speed (boolean, optional): Records speed of all balls in all collisions.
+        -> brownian (boolean, optional): Records data for Brownian motion.
+        -> dataset (boolean, optional): Records dataset of simulation information.
+        -> distance_absolute (boolean, optional): Records the distances of all
                                     balls from the origin, in all collisions.
-        -> distance_relative (boolean, optional): records the relative distances
+        -> distance_relative (boolean, optional): Records the relative distances
                                     between all the balls, in all collisions.
-        -> progress_bar (boolean, optional): displays a progress bar.
+        -> progress_bar (boolean, optional): Displays a progress bar.
+        -> sim_title (str, optional): Give the title for the simulation plot.
 
         RETURNS
             gloss(dict): Glossary of needed datasets.
@@ -789,7 +791,7 @@ class Simulation:
 
         if animate:                     # Initialise animation.
             self.init_patches()
-            plt.figure(num="Thermodynamic Simulation, Animated")
+            plt.figure(num=sim_title)
             plt.rcParams.update(plt.rcParamsDefault)
             ax = plt.axes(xlim=(-self._r_container,self._r_container),
                           ylim=(-self._r_container,self._r_container),aspect="1")

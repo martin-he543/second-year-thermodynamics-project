@@ -1,46 +1,52 @@
-import simulation as sm
-import seaborn as sns
-import matplotlib.pyplot as plt
+import simulation as sim
 import numpy as np
-import scipy as sp
+import scipy.constants as spc
+import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
-import concurrent.futures as ft
-import os, time
+import itertools as it
+import heapdict as hd
+import time as tm
+
+m_balls_animation = 5e-26
+r_balls_animation = 0.2
+N_balls_animation = 100
+collisions_animation = 500
+r_container_animation = 10
+random_speed_range_animation = 500
 
 
-#%%  
-# Task 1 
-# GENERATE CSV DATASETS for later reference
+sim_test_animation = sim.Simulation(N_balls=N_balls_animation, r_container=\
+    r_container_animation, r_balls=r_balls_animation, m_balls=m_balls_animation,
+    random_speed_range=random_speed_range_animation)
+run = sim_test_animation.run(collisions=collisions_animation, animate=True,
+                                sim_title="1. Simulation")
 
-DATA_PATH = os.path.join(os.getcwd(), "data")
-if not os.path.exists(DATA_PATH): os.makedirs(DATA_PATH)
+print("Plotting Graph 3 of 4")
 
-m_ball = 5e-26
-l_N_ball = [10, 20]; l_r_ball = [2,4]; l_r_container = [100,200]
-l_random_speed_range = [500,1000]; collisions = 50
+plt.figure(num="Relative Distance between Balls")
+sns.set(context="paper", style="darkgrid", palette="muted")
 
-print("Simulations beginning.")
-for r_ball in l_r_ball:
-    for N_ball in l_N_ball:
-        for r_container in l_r_container:
-            for random_speed_range in l_random_speed_range:
-                fname = f"dataset_{N_ball}_{r_ball}_{r_container}_{m_ball}\
-                    _{random_speed_range}_{collisions}.csv"
-                FILE_PATH = os.path.join(DATA_PATH,fname)
-                
-                if os.path.exists(FILE_PATH):
-                    print(f"exists: {N_ball} balls, r_ball = {r_ball}, \
-                            max speed = {random_speed_range}, \
-                            r_container = {r_container}, {collisions} collisions")
-                    continue
-                else:
-                    s = sm.Simulation(
-                        N_balls=N_ball,
-                        r_container=r_container,
-                        r_balls=r_ball,
-                        m_balls=m_ball,
-                        random_speed_range=random_speed_range)
-                    dataset = s.run(collisions=collisions, dataset=True)["dataset"]
-                    dataset.to_csv(FILE_PATH)
-                    print(f"Generated {FILE_PATH}")
-print("End.")
+sns.displot(dist_rel_test)
+
+plt.title("Relative Ball Distance Distribution")
+plt.xlabel(r"Distance between Balls $/m$")
+plt.ylabel(r"Probability Density $/m^{-1}$")
+plt.tight_layout()
+plt.show()
+
+
+print("Plotting Graph 4 of 4")
+
+plt.figure(num="Distance of Balls from Origin")
+sns.set(context="paper", style="darkgrid", palette="muted")
+
+sns.distplot(dist_centre_test, kde=False, norm_hist=True)
+
+plt.title("Distance Distribution from Origin")
+plt.xlabel("Ball Distance from Origin $/m$")
+plt.ylabel("Probability Density $/m^{-1}$")
+plt.tight_layout()
+plt.show()
+
+print("End of Script")
