@@ -1068,6 +1068,7 @@ class Simulation:
         self._pq = hd.heapdict()
         self._collisions = collisions
 
+
         print(
             f"starting {self._N_ball} balls, r_ball = {self._r_ball}, speed range = {self._vel_range}, r_container = {self._r_container}, {self._collisions} collisions"
         )

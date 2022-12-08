@@ -4,16 +4,13 @@
 import numpy as np
 from copy import deepcopy
 
-    #%% Ball Initialisation
-
+    #%% Ball Initialisation (1)
+    ### BALL INITIALISATION
+    # Initialisation of the Ball Class.
 class Ball:
     time = 0
-    def __init__(
-        self, mass = 1, radius = 1,
-        pos = np.array([0.0,0.0]),
-        vel = np.array([0.0,0.0]),
-        n_collision = 0, count = 0
-    ):
+    def __init__(self, mass = 1, radius = 1, pos = np.array([0.0,0.0]),
+                 vel = np.array([0.0,0.0]), n_collision = 0, count = 0):
         self._mass = mass                   # Mass of the ball.
         self._radius = radius               # Radius of the ball.
         self._pos = pos                     # Position of the ball, as np.ndarray.
@@ -23,7 +20,7 @@ class Ball:
         self._count = count                 # Count of the ball.
         return
 
-    #%% Ball Information
+    #%% Ball Information (2)
     ### BALL INFORMATION METHODS
     # Methods containing vital information on balls.
     def __repr__(self):
@@ -34,7 +31,7 @@ class Ball:
         return ("BALL: m = {self._mass}; r = {self._radius}; x = {self._pos};\
                  v = {self._vel}")
 
-    #%% Ball Movement
+    #%% Ball Movement (3)
     ### BALL MOVEMENT METHODS
     # Methods to help the balls move.
     def time_to_collision(self,other):
@@ -137,14 +134,12 @@ class Ball:
             other.set_vel(v_other_par + v_other_per)
             self._count += 1; other._count += 1
 
-
-
     def move(self,dt):
         """ move | Move the ball to a new position: r' = r + v * dt.
         """
         self.set_pos(self._pos + dt * self._vel)
 
-    #%% Ball Attributes
+    #%% Ball Attributes (9)
     ### BALL ATTRIBUTE METHODS
     """ Various properties and attributes of the ball are returned/altered.
         copy | Performs a deepcopy of the ball.
@@ -168,6 +163,8 @@ class Ball:
         RETURNS
             velocity (np.ndarray w/ float values): the current 2D velocity of
                                                    the ball.
+        
+        _______                                    
         set_mass | Define the new mass of the ball.
         < PARAMETERS >
         -> mass (float): the new defined mass of the ball.
@@ -175,7 +172,7 @@ class Ball:
         set_radius | Define the new radius of the ball.
         < PARAMETERS >
         -> radius (float): the new defined radius of the ball.
-
+        
         set_pos | Define the new position of the ball.
         < PARAMETERS >
         -> pos (np.ndarray(contains: float)): the new defined position of
@@ -197,7 +194,10 @@ class Ball:
     def set_pos(self, pos):         self._pos = np.array(pos)
     def set_vel(self,vel):          self._vel = np.array(vel)
 
-class Container(Ball): # Inherit the ball class for the container class.
+    #%% Container Class (1)
+    ### CONTAINER CLASS
+    # Contains the rigid circular container.
+class Container(Ball):      # Inherit the ball class for the container class.
     """ CONTAINER CLASS | This is a Container class. The container is used to
         enclose the balls in the 2D rigid disc collision.
         < PARAMETERS >
@@ -209,28 +209,3 @@ class Container(Ball): # Inherit the ball class for the container class.
         self._radius = radius
         self._mass = mass
         self._count = -1
-
-def magsquare_vector(vector):
-    """
-    Calculates the magnitude squared of a vector.
-
-    Arguments:
-        vector (numpy.ndarray of float): Vector.
-    
-    Returns:
-        (float): The magnitude squared of the vector.
-    """
-    return np.dot(vector, vector)
-
-
-def mag_vector(vector):
-    """
-    Calculates the magnitude of a vector.
-
-    Arguments:
-        vector (numpy.ndarray of float): Vector.
-    
-    Returns:
-        (float): The magnitude of the vector.
-    """
-    return np.sqrt(magsquare_vector(vector))
