@@ -1,6 +1,7 @@
 """ SIMULATION MODULE (import simulation as sm) | Created by 𝑀𝒶𝓇𝓉𝒾𝓃 𝒜. 𝐻𝑒, 2022.11.20
     For the simulation of elastic collisions of balls with others, and container.
 """ # Visit martinhe.com/thermo-project for more information!
+    #%% Imports & Prerequisites
 import ball as bl
 import numpy as np
 import scipy.constants as spc
@@ -11,23 +12,16 @@ import heapdict as hd
 import time as tm
 import sys, os, random
 
-titleFont =     {'fontname': 'Kinnari', 'size': 13}
-axesFont =      {'fontname': 'Kinnari', 'size': 9}
-ticksFont =     {'fontname': 'SF Mono', 'size': 7}
-errorStyle =    {'mew': 1, 'ms': 3, 'capsize': 3, 'color': 'blue', 'ls': ''}
-pointStyle =    {'mew': 1, 'ms': 3, 'color': 'blue'}
-lineStyle =     {'linewidth': 0.5}
-lineStyleBold = {'linewidth': 1}
-histStyle =     {'facecolor': 'green', 'alpha': 0.5, 'edgecolor': 'black'}
-
     #%% Simulation Initialisation
 class Simulation:
     """ SIMULATION CLASS |
         Simulate movement of hard spherical gas particles in circular container.
             < PARAMETERS >
-            -> N_balls: The number of balls to simulate.
+            -> N_balls(int, optional): The number of balls to simulate.
             -> r_balls: The radius of balls in the simulation.
+            -> m_balls: The mass of balls in the simulation.
             -> r_container: The radius of the circular container.
+            -> random_position: 
     """
     def __init__(self,
     # 𝔅𝔞𝔩𝔩 𝔓𝔯𝔬𝔭𝔢𝔯𝔱𝔦𝔢𝔰:
@@ -77,11 +71,15 @@ class Simulation:
     ### SIMULATION INFORMATION METHODS
     # Gives all simulation methods for returning information on Simulation.
     def __repr__(self):
+        """__repr__ | Gives the representation format for Simulation.
+        """
         return ("SIMULATION PROPERTIES: N = %s balls, m_balls = %s,\
                 r_balls = %s, r_container = %s")%(self._N_balls, self._m_balls,\
                     self._r_balls, self._r_container)
 
     def __str__(self):
+        """ __str__ | Gives the string format for Simulation.
+        """
         return ("SIMULATION PROPERTIES: N = %s balls, m_balls = %s,\
                 r_balls = %s, r_container = %s")%(self._N_balls, self._m_balls,\
                     self._r_balls, self._r_container)

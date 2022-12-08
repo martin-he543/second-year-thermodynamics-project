@@ -43,7 +43,7 @@ class Simulation:
         self._m_balls = m_balls             # The mass of the container balls.
         self._r_balls = r_balls             # The radius of the container balls.
         self._r_container = r_container     # The radius of the container.
-
+d
         self._temperature = []              # System T, for all collisions.
         self._KE = []                       # System K.E...
         self._speed = []                    # Speed of all balls...
@@ -54,7 +54,7 @@ class Simulation:
         self._pairs = self.pair_combn()     # Lists all pair combinations of balls.
         
         self._random_position = random_position # Sets random positioning.
-        self._random_speed = random_speed_range # Sets random speed range.
+        self._random_sdpeed = random_speed_range # Sets random speed range.
         self._brownian = []                 # Brownian motion investigation data.
         
         self._container = bl.Container(radius=r_container) # Container choice.

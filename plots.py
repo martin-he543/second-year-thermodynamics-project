@@ -8,6 +8,15 @@ import numpy as np
 import pandas as pd
 import os, time
 
+titleFont =     {'fontname': 'Kinnari', 'size': 13}
+axesFont =      {'fontname': 'Kinnari', 'size': 9}
+ticksFont =     {'fontname': 'SF Mono', 'size': 7}
+errorStyle =    {'mew': 1, 'ms': 3, 'capsize': 3, 'color': 'blue', 'ls': ''}
+pointStyle =    {'mew': 1, 'ms': 3, 'color': 'blue'}
+lineStyle =     {'linewidth': 0.5}
+lineStyleBold = {'linewidth': 1}
+histStyle =     {'facecolor': 'green', 'alpha': 0.5, 'edgecolor': 'black'}
+
 class Plots:
     def plot_simulation_animation(m_balls_animation=5e-26, r_balls_animation=0.2,
                                 N_balls_animation=100, collisions_animation=500,
