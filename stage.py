@@ -1,7 +1,7 @@
 import simulation as sim
 import matplotlib.pyplot as plt
 import seaborn as sns
-import plots_backup as martplotlib
+import archive.plots_backup as martplotlib
 
 m_balls_animation = 5e-26
 r_balls_animation = 0.2
