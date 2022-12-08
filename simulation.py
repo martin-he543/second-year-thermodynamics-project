@@ -1,7 +1,9 @@
 """ SIMULATION MODULE (import simulation as sm) | Created by 𝑀𝒶𝓇𝓉𝒾𝓃 𝒜. 𝐻𝑒, 2022.11.20
     For the simulation of elastic collisions of balls with others, and container.
+    -> Simulation Class.
+    -> Event Class.
+    -> Plots Class.
 """ # martinhe.com/thermo-project
-    #%% Imports & Prerequisites
 import ball as bl
 import numpy as np
 import scipy.constants as spc
@@ -11,6 +13,15 @@ import itertools as it
 import heapdict as hd
 import time as tm
 import sys, os, random
+
+titleFont =     {'fontname': 'Kinnari', 'size': 13}
+axesFont =      {'fontname': 'Kinnari', 'size': 9}
+ticksFont =     {'fontname': 'SF Mono', 'size': 7}
+errorStyle =    {'mew': 1, 'ms': 3, 'capsize': 3, 'color': 'blue', 'ls': ''}
+pointStyle =    {'mew': 1, 'ms': 3, 'color': 'blue'}
+lineStyle =     {'linewidth': 0.5}
+lineStyleBold = {'linewidth': 1}
+histStyle =     {'facecolor': 'green', 'alpha': 0.5, 'edgecolor': 'black'}
 
 def gen_random_uniform(maximum_range):      # Please keep global.
     """ gen_random_uniform | Provides a uniform distribution centered at (0,0),
@@ -22,7 +33,6 @@ def gen_random_uniform(maximum_range):      # Please keep global.
     """
     return np.random.uniform(-maximum_range,maximum_range)
 
-    #%% Simulation Initialisation (1)
 class Simulation:
     """ SIMULATION CLASS |
         Simulate movement of hard spherical gas particles in circular container.
@@ -103,9 +113,6 @@ class Simulation:
         if random_position:                 self.randomiser(position=True)
         self.randomiser(max_speed=random_speed_range, velocity=True)
 
-    #%% Simulation Information ✔️ (3)
-    ### SIMULATION INFORMATION METHODS
-    # Gives all simulation methods for returning information on Simulation.
     def __repr__(self):
         """ __repr__ | Gives the representation format for Simulation.
             RETURNS
@@ -145,10 +152,7 @@ class Simulation:
         if dataset: gloss["dataset"] = self._dataset
         if brownian: gloss["brownian"] = self.brownian
         return gloss
-
-    #%% Simulation Property ✔️ (1)
-    ### SIMULATION PROPERTY METHODS
-    # Gives all the simulation methods about properties of the system.    
+  
     def property(self, N_balls=False, ball=False, container=False, speed=False,
                  KE=False, distance_absolute=False, distance_relative=False,
                  temperature=False, temperature_moyen=False, pressure=False,
@@ -233,10 +237,6 @@ class Simulation:
             else:                   list_number = list(range(self._N_balls + 1))
             return                  list(it.combinations(list_number, 2))
 
-    #%% Simulation Movement ✔️ (1)
-    ### SIMULATION MOVEMENT METHODS
-    # Gives all the simulation methods for defining movement of balls.
-    # For clarity, next_collision function has been separated in 4:
     def next_collision(self, init=False, pressure=False, test_pressure=False, brownian=False):
         """ next_collision | Sets up and performs the next collision.
             The logic of the next_collision method should be as follows:
@@ -360,9 +360,6 @@ class Simulation:
         if self._has_brownian:
             if record:  self.record_property(brownian=True)
 
-    #%% Simulation Randomisation ✔️ (1)
-    ### SIMULATION RANDOMISATION METHODS
-    # Gives all the randomisation methods for the simulation.
     def randomiser(self, start=0, position=False, velocity=False, max_speed=5):
         """ randomiser | Generates random velocities and positions.
                 < PARAMETERS >
@@ -378,7 +375,6 @@ class Simulation:
                     Exception: Balls cannot fit in this container. Reduce
                                N_balls or increase r_container.
         """
-
         if velocity:
             list = []
             for _ in range(self._N_balls):
@@ -418,9 +414,6 @@ class Simulation:
                         break
                 self._balls[i].set_pos(pos)
 
-    #%% Simulation Display ✔️ (1)
-    ### SIMULATION DISPLAY METHODS
-    # Gives all the links with Pylab and Matplotlib.
     def draw(self, init=False, draw_current_state=False):
         """ draw | Updates the animation with new positions of ball patches.
                 < PARAMETERS >
@@ -428,7 +421,6 @@ class Simulation:
                 -> draw_current_state(boolean, optional): Draw current state.
         """
         def init_patches(self):     self.draw(init=True)
-            
         if init:
             ball_patches = []                               # List of ball patches.
             position_container = self._container._pos
@@ -438,27 +430,27 @@ class Simulation:
 
             for i, ball in np.ndenumerate(self._balls):     # Create tuple pairs.
                 position_ball, r_ball = ball._pos, ball._radius
-                if i != 0:  ball_patches.append(plt.Circle(position_ball, r_ball,\
-                                        ec="black", fc=tuple((np.random.rand(),\
+                if i != 0:  ball_patches.append(plt.Circle(position_ball, r_ball,
+                                        ec="black", fc=tuple((np.random.rand(),
                                         np.random.rand(), np.random.rand()))))
-                else:       ball_patches.append(plt.Circle(position_ball, r_ball,\
+                else:       ball_patches.append(plt.Circle(position_ball, r_ball,
                                         ec="black", fc="yellow"))
 
             self._ball_patches = ball_patches
             self._outline_container = outline_container
+            
         if draw_current_state:
             init_patches(); plt.figure(num="Current Simulation State")
-            axes = plt.axes(xlim=(-self._r_container, self._r_container), \
-                            ylim=(-self._r_container,self._r_container), aspect="1")
+            axes = plt.axes(xlim=(-self._r_container, self._r_container),
+                            ylim=(-self._r_container,self._r_container),
+                                aspect="1", animated=True)
             axes.add_patch(self._container_outline)
             for patch in self._ball_patches:    axes.add_patch(patch)
+            
             plt.show()
         for i in range(0, self._N_balls):
             self._ball_patches[i].center = self._balls[i].pos()
-            
-    #%% Simulation Brownian ✔️ (1)
-    ### SIMULATION BROWNIAN MOTION INVESTIGATION
-    # Gives all the methods for the Brownian Motion investigation.
+
     def brownian_investigation(self, init=False, radius=5, mass=10, tracer=True):
         if init:
             """ brownian_init | Initialisation of Brownian motion investigation,
@@ -483,10 +475,6 @@ class Simulation:
                             color="black", alpha=0.6,lw=0.7)
             return trace
 
-
-    #%% Simulation Recording ✔️ (2)
-    ### SIMULATION RECORDING METHODS
-    # Gives simulation methods for recording data.
     def record_property(self, pressure=False, pressure_moyen=False,
                         temperature=False, temperature_moyen=False,
                         speed=False, KE=False, distance_absolute=False,
@@ -725,9 +713,6 @@ class Simulation:
         if pressure:                            self.record_property(pressure_moyen=True)
         if test_pressure:                       self.record_property(pressure=True)
 
-    #%% Simulation Run ✔️ (2)
-    ### SIMULATION RUN METHOD
-    # The method to run simulations.
     def run(self,
         collisions = 10,            # The number of collisions.
         time = 0.001,               # Time period between collisions.
@@ -778,7 +763,7 @@ class Simulation:
         print("Starting {self._N_balls} balls, r_balls = {self._r_balls}, \
             speed range = {self._speed_range}, r_container = {self._r_container},\
             {self._collisions} collisions.")
-
+        
         if animate:                             # Initialise animation.
             self.draw(init=True)
             plt.figure(num="Thermodynamic Simulation, Animated")
@@ -859,10 +844,6 @@ def progress(start_time, iterations, all_iterations, description="Collision"):
     if iterations == all_iterations:    progress += "\n"
     print ("\033[A \033[A");            sys.stdout.write(progress)
 
-    #%% Event Class ✔️ (6)
-    ### EVENT CLASS
-    # For the creation of collision events between pairs.
-
 class Event(tuple):
     """ EVENT CLASS |
         A tuple of 5 elements (ball_A, ball_B, count_A, count_B, dt).
@@ -891,3 +872,64 @@ class Event(tuple):
     def count_A(self):      return self[2]              # Returns Ball A count.
     def count_B(self):      return self[3]              # Returns Ball B count.
     def dt(self):           return self[4]              # Returns minimum time.
+    
+class Plots:
+    def plot_simulation_animation(m_balls_animation=5e-26, r_balls_animation=0.2,
+                                N_balls_animation=100, collisions_animation=500,
+                                r_container_animation=10,
+                                random_speed_range_animation=500):
+        """ plot_simulation_animation | Plot the animation of the simulation.
+                < PARAMETERS >
+                -> m_balls_animation(float, optional): Ball mass in animation.
+                -> r_balls_animation(float, optional): Ball radius in animation.
+                -> N_balls_animation(int, optional): Number of animation balls.
+                -> collisions_animation(int, optional): Number of collisions.
+                -> r_container_animation(float, optional): Radius of container.
+                -> random_speed_range_animation(int, optional): Range of speeds.
+        """
+        print("(1) Commencing the animated Simulation...")
+        sim_test_animation = Simulation(m_balls=m_balls_animation, 
+            r_balls=r_balls_animation, N_balls=N_balls_animation, r_container=
+            r_container_animation, random_speed_range=random_speed_range_animation)
+        sim_test_animation.run(collisions=collisions_animation, animate=True)
+
+    def generate_dataset(folder_name="data", m_balls=5e-26, N_balls=[10,20],
+                         r_balls=[2,4], r_containers=[100,200], collisions=50,
+                         speed_ranges=[500,1000]):
+        """ generate_dataset | Generates a dataset
+            < PARAMETERS >
+            -> folder_name(str): Designated name of folder holding datasets.
+            -> m_balls(float, optional): Mass of the dataset balls.
+            -> N_balls(list(int), optional): List of number of balls to create.
+            -> r_balls(list(float), optional): List of ball radii to create.
+            -> r_containers(list(float), optional): List of container radii.
+            -> collisions(int, optional): Number of collisions to occur.
+            -> speed_ranges(list(float), optional): List of ball speed ranges.
+        """
+        print("(2) Generating exportable CSV datasets...")
+        
+        DATA_PATH = os.path.join(os.getcwd(), folder_name)       # Create path.
+        if not os.path.exists(DATA_PATH): os.makedirs(DATA_PATH) # Make folder.
+        
+        for r_ball in r_balls:
+            for N_ball in N_balls:
+                for r_container in r_containers:
+                    for random_speed_range in speed_ranges:
+                        fname = f"dataset_{N_ball}_{r_ball}_{r_container}_\
+                                 {m_balls}_{random_speed_range}_{collisions}.csv"
+                        FILE_PATH = os.path.join(DATA_PATH, fname)
+                        if os.path.exists(FILE_PATH):
+                            print(f"Existing Dataset: {N_ball} balls,\
+                                    r_ball = {r_ball}, r_container = {r_container},\
+                                    max speed = {random_speed_range},\
+                                    {collisions} collisions")
+                            continue
+                        
+                        else:
+                            sim_gen_dataset = Simulation(m_balls=m_balls, r_balls=r_ball,
+                                         r_container=r_container, N_balls=N_ball,
+                                         random_speed_range=random_speed_range)
+                            dataset = sim_gen_dataset.run(collisions=collisions, 
+                                                          dataset=True)["dataset"]
+                            dataset.to_csv(FILE_PATH)
+                            print(f"Generated Dataset: {FILE_PATH}")

@@ -1,5 +1,7 @@
 """ BALL MODULE (import ball as bl) | Created by 𝑀𝒶𝓇𝓉𝒾𝓃 𝒜. 𝐻𝑒, 2022.11.20
     For the simulation of elastic collisions of balls with others, and container.
+    -> Ball Class
+    -> Container Class
 """
 import numpy as np
 from copy import deepcopy
@@ -101,37 +103,21 @@ class Ball:
         # Resolve the velocity into // and |_ to the line of centres.
         u_self_par = np.vdot(self._vel, r) / np.dot(r,r) * r
         u_self_per = self._vel - u_self_par
-
-        # Consider collisions with the container.
-        if isinstance(other,Container):
+        
+        if isinstance(other,Container):         # Container collisions.
+            vel_i = self._vel
             v_self_par,v_other_par = -u_self_par, np.zeros(2)
             v_self_per = u_self_per
             self.set_vel(v_self_par + v_self_per)
             other.set_vel(np.zeros(2))
             self._count += 1; other._count += 1
-
+            
             vel_f = self._vel
-            vel_i = self._vel
-            dv = vel_f - vel_i
-            self._dp = dv * self._mass
-
-        # Consider collisions with another ball.
-        else:
+            self._dp = (vel_f - vel_i) * self._mass
+        else:                                   # Ball-Ball collisions.
             m1,m2 = self._mass, other._mass
-            # self.set_vel(self._vel - ((2*m2)/(m1*m2))*(np.dot(v,r)/np.dot(r,r))*r)
-            # other.set_vel(other._vel - ((2*m1)/(m1*m2))*(np.dot(-v,-r)/np.dot(-r,-r))*(-r))
-
-            # Only care about parallel components in 1D. Consider relative velocities.
-            u_other_par = np.vdot(other._vel, r) / np.dot(r,r) * r
-            u_other_per = other._vel - u_other_par
-            u_self_par_relative = u_self_par - u_other_par
-            v_self_par_relative = (m1 - m2)/(m1 + m2) * u_self_par_relative
-
-            v_self_par = v_self_par_relative + u_other_par
-            v_other_par = u_self_par - u_other_par + v_self_par
-            v_self_per, v_other_per = u_self_per, u_other_per
-            self.set_vel(v_self_par + v_self_per)
-            other.set_vel(v_other_par + v_other_per)
+            self.set_vel(self._vel - (2*m2/(m1+m2)*(np.dot(v,r)/np.dot(r,r))*r))
+            other.set_vel(other._vel - ((2*m1)/(m1+m2))*(np.dot(-v,-r)/np.dot(-r,-r))*(-r))
             self._count += 1; other._count += 1
 
     def move(self,dt):
