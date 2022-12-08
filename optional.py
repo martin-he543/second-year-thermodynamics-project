@@ -61,3 +61,17 @@ class Brownian:
                 
         return pd.DataFrame([x_samp, y_samp, t_samp]).transpose().rename(columns=\
             {0: "x", 1: "y", 2: "t"})
+        
+    def temperature_from_rms_speed(rms_speed, m):
+        """
+        Calculates temperature from the root-mean-squared speed of particles.
+
+        Parameters:
+            rms_speed (float): Root-mean-squared speed of the particles.
+            m (float): Mass of the particles.
+        
+        Returns:
+            (float): The temperature of the system.
+        """
+        k = 1.38064852e-23
+        return 0.5 * m * rms_speed ** 2 / k
