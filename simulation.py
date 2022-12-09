@@ -6,8 +6,11 @@
 """ # martinhe.com/thermo-project
 import ball as bl
 import numpy as np
+import scipy as sp
+import scipy.optimize as opt
 import scipy.constants as spc
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fnt
 import seaborn as sns
 import pandas as pd
 import itertools as it
@@ -972,6 +975,7 @@ class Plot:
     def plot_distance(init=True, absolute=True, relative=True):
         """ plot_distance | Plot relative and absolute distance histograms.
                 < PARAMETERS >
+                -> init(boolean, optional): Check if this is the initialisation.
                 -> absolute(boolean, optional): Plot absolute distances.
                 -> relative(boolean, optional): Plot relative distances.
         """
@@ -1006,6 +1010,11 @@ class Plot:
 
     def plot_conservation(init=False, pressure=False, KE = False, p=False):
         """ plot_conservation | Plots conservation graphs over time.
+                < PARAMETERS >
+                -> init(boolean, optional): Initialisation method.
+                -> pressure(boolean, optional): Enable pressure graph.
+                -> KE(boolean, optional): Enable KE graph.
+                -> p(boolean, optional): Enable momentum graph.
         """
         print("(4) Commencing the conservation law plots...")
         if init:
@@ -1109,12 +1118,214 @@ class Plot:
             plt.ylabel("Pressure /Pa")
             plt.legend(); plt.tight_layout(); plt.show()
 
-    def plot_maxwell_boltzmann(v, m, T):
+    def plot_maxwell_boltzmann(m_ball=5e-26, r_container=5, N_balls=300,
+                               r_ball=0.1, collisions = 10000, random_speed_range=500,
+                               range_N_balls = np.linspace(100,300,101), save=False,
+                               range_N_collisions = np.linspace(125, 10000, 80),
+                               iter_balls=True,iter_collisions=True):
         """ plot_maxwell_boltzmann | Plots a Maxwell-Boltzmann distribution.
         """
-        def distribution_maxwell_boltzmann(v=v, m=m, T=T):
+        range_N_balls = (int(N) for N in range_N_balls)
+        range_N_collisions = (int(N) for N in range_N_collisions)
+        temperature_list = []
+        def distribution_maxwell_boltzmann(v, m, T):
             """ distribution_maxwell_boltzmann | Returns value of distribution.
                     < PARAMETERS >
                     -> v(np.ndarray(float)): Array of gas particle speeds. 
             """
             return (m*v)/(spc.Boltzmann*T)*np.exp((-0.5*m*v**2)/(spc.Boltzmann*T))
+        
+        if iter_balls:
+            for N_ball in range_N_balls:
+                simulation_maxwell_boltzmann = Simulation(N_balls=N_ball,
+                            r_container=r_container, m_balls=m_ball, r_balls=r_ball,
+                            random_speed_range=random_speed_range)
+                sim = simulation_maxwell_boltzmann.run(collisions=collisions, speed=True,
+                                                    temperature=True)
+                speeds = np.array(sim["speed"])
+                temperature = sim["average temperature"]
+                
+                array_maxwell_boltzmann = np.linspace(np.amin(speeds),np.amax(speeds),10000)
+                
+                n, bins, patches = plt.hist(x = speeds, bins = 30, **histStyle)
+                v = (bins[:-1] + bins[1:]) / 2
+                curve_maxwell_boltzmann = opt.curve_fit(distribution_maxwell_boltzmann, n, v)
+                
+                # curve_maxwell_boltzmann = distribution_maxwell_boltzmann(
+                    #array_maxwell_boltzmann, temperature, m_ball)
+                
+                font = fnt.FontProperties(family='C059', weight='bold',
+                                          style='normal', size=8)
+
+                x = np.linspace(bins[0], bins[-1], 1000)
+                params, cov_params = opt.curve_fit(distribution_maxwell_boltzmann, v, n)
+                
+                sns.set(context="paper", style="darkgrid", palette="muted")
+                # sns.displot(speeds, label="Simulation Data", bins=30, kde=False)
+                
+                plt.plot(x, distribution_maxwell_boltzmann(x, *params), 
+                        label="Maxwell-Boltzmann Distribution", lw=2)
+                
+                plt.title("2D Maxwell-Boltzmann Distribution", **titleFont)
+                plt.xlabel(r"Speed /$m s^{-1}$ ", **axesFont)
+                plt.ylabel(r"Probability Density /$m^{-1} s$", **axesFont)
+                plt.xticks(**ticksFont); plt.yticks(**ticksFont)
+                plt.legend(prop=font)
+                plt.tight_layout()
+                plt.show()
+
+                temperature_list.append(temperature)
+                if save:
+                    np.savetxt(f"data/speeds_m_{m_ball}_r_c_{r_container}_N_{N_ball}_r_b_{r_ball}_N_c_{collisions}_r_s_r_{random_speed_range}.txt", speeds, fmt="%s")
+                    np.savetxt(f"data/arr_m_{m_ball}_r_c_{r_container}_N_{N_ball}_r_b_{r_ball}_N_c_{collisions}_r_s_r_{random_speed_range}.txt", array_maxwell_boltzmann, fmt="%s")
+                    np.savetxt(f"data/MBD_m_{m_ball}_r_c_{r_container}_N_{N_ball}_r_b_{r_ball}_N_c_{collisions}_r_s_r_{random_speed_range}.txt", curve_maxwell_boltzmann, fmt="%s")
+                    np.savetxt(f"data/temperature_m_{m_ball}_r_c_{r_container}_N_{N_ball}_r_b_{r_ball}_N_c_{collisions}_r_s_r_{random_speed_range}.txt", temperature_list, fmt="%s")
+
+        if iter_collisions:
+            temperature_list = []
+            for collisions in range_N_collisions:
+                simulation_maxwell_boltzmann = Simulation(N_balls=N_ball,
+                            r_container=r_container, m_balls=m_ball, r_balls=r_ball,
+                            random_speed_range=random_speed_range)
+                sim = simulation_maxwell_boltzmann.run(collisions=collisions, speed=True,
+                                                    temperature=True)
+                speeds = np.array(sim["speed"])
+                temperature = sim["average temperature"]
+                
+                array_maxwell_boltzmann = np.linspace(np.amin(speeds),np.amax(speeds),
+                                                    10000)
+                curve_maxwell_boltzmann = distribution_maxwell_boltzmann(
+                    array_maxwell_boltzmann, temperature, m_ball)
+
+                font = fnt.FontProperties(family='C059', weight='bold',
+                                          style='normal', size=8)
+
+                sns.set(context="paper", style="darkgrid", palette="muted")
+
+                sns.displot(speeds, label="Simulation Data", bins=30, kde=False)
+                plt.plot(array_maxwell_boltzmann, curve_maxwell_boltzmann, 
+                        label="Maxwell-Boltzmann Distribution", lw=2)
+                plt.title("2D Maxwell-Boltzmann Distribution", **titleFont)
+                plt.xlabel(r"Speed /$m s^{-1}$ ", **axesFont)
+                plt.ylabel(r"Probability Density /$m^{-1} s$", **axesFont)
+                plt.xticks(**ticksFont); plt.yticks(**ticksFont)
+                plt.legend(prop=font)
+                plt.tight_layout()
+                plt.show()
+
+
+                temperature_list.append(temperature)
+                if save:
+                    np.savetxt(f"data/c/speeds_m_{m_ball}_r_c_{r_container}_N_{N_ball}_r_b_{r_ball}_N_c_{collisions}_r_s_r_{random_speed_range}.txt", speeds, fmt="%s")
+                    np.savetxt(f"data/c/arr_m_{m_ball}_r_c_{r_container}_N_{N_ball}_r_b_{r_ball}_N_c_{collisions}_r_s_r_{random_speed_range}.txt", array_maxwell_boltzmann, fmt="%s")
+                    np.savetxt(f"data/c/MBD_m_{m_ball}_r_c_{r_container}_N_{N_ball}_r_b_{r_ball}_N_c_{collisions}_r_s_r_{random_speed_range}.txt", curve_maxwell_boltzmann, fmt="%s")
+                    np.savetxt(f"data/c/temperature_m_{m_ball}_r_c_{r_container}_N_{N_ball}_r_b_{r_ball}_N_c_{collisions}_r_s_r_{random_speed_range}.txt", temperature_list, fmt="%s")
+
+    def plot_van_der_waals_law(m_ball=5e-26, r_container=5, N_balls=300,
+                               collisions = 10000, r_balls=np.linspace(500,2000,7),
+                               random_speed_ranges=np.linspace(500,2000,7)):
+        """ plot_van_der_waals_law | Plots the Van der Waals graph.
+        """
+        def van_der_waals_law(T, N, V, b):
+            """ van_der_waals_law | Returns the value from the Law.
+                    < PARAMETERS >
+                    -> T(float): The system temperature.
+                    -> V(float): The container volume.
+                    -> N(int): The number of gas particles.
+                    -> b(float): The effective area of gas particles.
+                    RETURNS
+                        (float): The pressure on the container walls.
+            """
+            return (N.spc.Boltzmann * N)/(V-N*b)*T
+        
+        def calculate_b(volume_container, N_balls, m):
+            """ calculate_b | Calculates the value of effective gas area.
+                    < PARAMETERS >
+                    -> volume_container(float): The container volume.
+                    -> N_balls(int): The number of balls in this system.
+                    -> m(float): Gradient of P against T.
+                    RETURNS
+                        (float): The effective volume of a gas particle, b.
+            """
+            return(volume_container/N_balls) - spc.Boltzmann/m
+        
+        def calculate_unc_b(m, unc_m):
+            """ calculate_unc_b | Calculate the uncertainty in b.
+                    < PARAMETERS >
+            """
+            return (spc.Boltzmann/m**2) * unc_m
+        
+        def power_law(x, n, A, B):
+            """ power_law | Calculates a power law.
+            """
+            return A*x**n + B
+        
+        def run(params):
+            """ run | Runs the simulation.
+            """
+            r_ball, random_speed_range = params[0], params[1]
+            simulation_van_der_waals = Simulation(N_balls = N_balls, r_container=r_container,
+                                                  r_balls=r_ball,
+                                                  random_speed_range=random_speed_range)
+            sim = simulation_van_der_waals.run(collisions=collisions, pressure=True,
+                                               temperature=True, progress_bar=False)
+            return sim
+        
+        parameters, pressures, temperatures = [], [], []
+        volume = r_container**2 * np.pi
+        
+        if __name__ == "__main__":
+            for r_ball in r_balls:
+                for random_speed_range in random_speed_ranges:
+                    parameters.append([r_ball,random_speed_range])
+                    
+            t_start = tm.perf_counter()
+            with ft.ProcessPoolExecutor() as executor:
+                results = executor.map(run, parameters)
+            t_end = tm.perf_counter()
+            
+            print(f"Time elapsed: {round(t_end-t_start,1)}s")
+            for result in results:
+                pressures.append(result["average pressure"])
+                temperatures.append(result["average temperature"])
+                
+            list_b, list_V = np.zeros(len(r_balls)),  np.zeros(len(r_balls))
+            unc_b = np.zeros(len(r_balls))
+            
+            for i, r_ball in enumerate(r_balls):        # Data to plot b vs. V.
+                temperatures_cache, pressures_cache = [], []
+                for j, random_speed_range in enumerate(random_speed_ranges):
+                    temperatures_cache.append(temperatures[i*len(random_speed_ranges) + j])
+                    pressures_cache.append(pressures[i*len(random_speed_ranges) + j])
+                linear = sp.stats.linregress(temperatures_cache, pressures_cache)
+                
+                m, unc_m = linear.slope, linear.stderr  # Linear regression.
+                list_b[i], list_V[i] = calculate_b(volume, N_balls, m),\
+                                       np.pi * r_ball**2
+                unc_b[i] = calculate_unc_b(m, unc_m)
+                
+                guess_n, guess_A, guess_B = 0.5, 1, 0.5
+                p0_power_law = [guess_n, guess_A, guess_B]
+                fit_power_law = opt.curve_fit(power_law, list_V, list_b,
+                                              p0=p0_power_law, sigma=unc_b)
+                
+            
+            
+            
+            
+            
+            print("Plotting Graph 1 of 1")
+
+            plt.figure(num="Power Law of b and V")
+            sns.set(context="paper", style="darkgrid", palette="muted")
+
+            plt.plot(arr_fit, data_fit_power, label=legend_fit, lw=2, alpha=0.8)
+            plt.plot(arr_V, arr_b, "o", mew=0.5, mec="white")
+            plt.errorbar(arr_V, arr_b, yerr=err_b, fmt="none", color="black", capsize=3)
+
+            plt.title("Power Law Scaling of Ball Effective Area")
+            plt.xlabel(r"Area of 1 Ball $V_{ball}$ /$m^2$")
+            plt.ylabel(r"Effective Area of 1 Ball $b$ /$m^2$")
+            plt.legend()
+            plt.tight_layout()
+            plt.show()
