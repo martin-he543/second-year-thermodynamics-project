@@ -1,5 +1,5 @@
 import numpy as np
-import simulation as sim
+import simulation_temp as sim
 import scipy.constants as spc
 import matplotlib.pyplot as plt
 import seaborn as sns
