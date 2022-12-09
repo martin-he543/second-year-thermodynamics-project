@@ -18,7 +18,7 @@ Constants:
 
 Xin Kai Lee 17/03/2020
 """
-import simulation as sim
+import simulation_old as sim
 import seaborn as sns
 import matplotlib.pyplot as plt
 import scipy as sp

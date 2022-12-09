@@ -78,7 +78,7 @@ for N_ball in range_N_balls:
     plt.ylabel(r"Probability Density /$m^{-1} s$")
     plt.legend()
     plt.tight_layout()
-    # plt.show()
+    plt.show()
 
     temperature_list.append(temperature)
     np.savetxt(f"data/speeds_m_{m_ball}_r_c_{r_container}_N_{N_ball}_r_b_{r_ball}_N_c_{collisions}_r_s_r_{random_speed_range}.txt", speeds, fmt="%s")
