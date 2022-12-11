@@ -1008,7 +1008,7 @@ class Plot:
             plt.xticks(**ticksFont); plt.yticks(**ticksFont) 
             plt.tight_layout(); plt.show()
 
-    def plot_conservation(init=False, pressure=False, KE = False, p=False):
+    def plot_conservation(init=True, pressure=False, KE=False, p=False):
         """ plot_conservation | Plots conservation graphs over time.
                 < PARAMETERS >
                 -> init(boolean, optional): Initialisation method.
@@ -1021,6 +1021,55 @@ class Plot:
             print("Initialisation")
         if pressure:
             print("Pressure Conservation...")
+            print("Starting Simulation for Steady State Pressure Distribution")
+            
+            m_ball_P = 5e-26
+            N_ball_P = 10
+            r_ball_P = 0.2
+            r_container_P = 1
+            random_speed_range_P = 500
+            collisions_P = 50000
+
+            sim_test_P = Simulation(
+                N_balls=N_ball_P,
+                r_container=r_container_P,
+                r_balls=r_ball_P,
+                m_balls=m_ball_P,
+                random_speed_range=random_speed_range_P,
+            )
+            param_test_P = sim_test_P.run(collisions=collisions_P, test_pressure=True)
+
+            pressure_test = param_test_P["pressure"]
+
+            # Fitting the Steady State Pressure to a Normal Distribution
+            fit_norm = sp.stats.norm.fit(pressure_test["pressure"])
+            ks_norm = sp.stats.kstest(pressure_test["pressure"], "norm", fit_norm)
+            pdf_norm = sp.stats.norm(*fit_norm)
+
+            print(f"Normal Distribution: KS Statistic = \
+                {round(ks_norm[0],6)}, p = {round(ks_norm[1],3)}")
+
+
+            arr_norm = np.linspace(min(pressure_test["pressure"]),\
+                max(pressure_test["pressure"]), 1000)
+
+            legend_norm = r"$\mu$ = %s Pa, $\sigma$ =  %s Pa" % (
+                float("%.2g" % fit_norm[0]),
+                float("%.1g" % fit_norm[1]))
+
+            print("Plotting Graph 1 of 4")
+
+            plt.figure(num="Steady State Pressure Distribution")
+            sns.set(context="paper", style="darkgrid", palette="muted")
+            sns.distplot(pressure_test["pressure"], kde=False, norm_hist=True, rug=True)
+            plt.plot(arr_norm, pdf_norm.pdf(arr_norm), label=legend_norm, lw=2)
+            plt.title("Steady State Pressure Distribution")
+            plt.xlabel(r"Pressure $/Pa$")
+            plt.ylabel(r"Probability Density $/Pa ^{-1}$")
+            plt.legend()
+            plt.tight_layout()
+            plt.show()
+
         if KE:
             print("Conservation of Energy...")
         if p:
@@ -1220,112 +1269,3 @@ class Plot:
                     np.savetxt(f"data/c/arr_m_{m_ball}_r_c_{r_container}_N_{N_ball}_r_b_{r_ball}_N_c_{collisions}_r_s_r_{random_speed_range}.txt", array_maxwell_boltzmann, fmt="%s")
                     np.savetxt(f"data/c/MBD_m_{m_ball}_r_c_{r_container}_N_{N_ball}_r_b_{r_ball}_N_c_{collisions}_r_s_r_{random_speed_range}.txt", curve_maxwell_boltzmann, fmt="%s")
                     np.savetxt(f"data/c/temperature_m_{m_ball}_r_c_{r_container}_N_{N_ball}_r_b_{r_ball}_N_c_{collisions}_r_s_r_{random_speed_range}.txt", temperature_list, fmt="%s")
-
-    def plot_van_der_waals_law(m_ball=5e-26, r_container=5, N_balls=300,
-                               collisions = 10000, r_balls=np.linspace(500,2000,7),
-                               random_speed_ranges=np.linspace(500,2000,7)):
-        """ plot_van_der_waals_law | Plots the Van der Waals graph.
-        """
-        def van_der_waals_law(T, N, V, b):
-            """ van_der_waals_law | Returns the value from the Law.
-                    < PARAMETERS >
-                    -> T(float): The system temperature.
-                    -> V(float): The container volume.
-                    -> N(int): The number of gas particles.
-                    -> b(float): The effective area of gas particles.
-                    RETURNS
-                        (float): The pressure on the container walls.
-            """
-            return (N.spc.Boltzmann * N)/(V-N*b)*T
-        
-        def calculate_b(volume_container, N_balls, m):
-            """ calculate_b | Calculates the value of effective gas area.
-                    < PARAMETERS >
-                    -> volume_container(float): The container volume.
-                    -> N_balls(int): The number of balls in this system.
-                    -> m(float): Gradient of P against T.
-                    RETURNS
-                        (float): The effective volume of a gas particle, b.
-            """
-            return(volume_container/N_balls) - spc.Boltzmann/m
-        
-        def calculate_unc_b(m, unc_m):
-            """ calculate_unc_b | Calculate the uncertainty in b.
-                    < PARAMETERS >
-            """
-            return (spc.Boltzmann/m**2) * unc_m
-        
-        def power_law(x, n, A, B):
-            """ power_law | Calculates a power law.
-            """
-            return A*x**n + B
-        
-        def run(params):
-            """ run | Runs the simulation.
-            """
-            r_ball, random_speed_range = params[0], params[1]
-            simulation_van_der_waals = Simulation(N_balls = N_balls, r_container=r_container,
-                                                  r_balls=r_ball,
-                                                  random_speed_range=random_speed_range)
-            sim = simulation_van_der_waals.run(collisions=collisions, pressure=True,
-                                               temperature=True, progress_bar=False)
-            return sim
-        
-        parameters, pressures, temperatures = [], [], []
-        volume = r_container**2 * np.pi
-        
-        if __name__ == "__main__":
-            for r_ball in r_balls:
-                for random_speed_range in random_speed_ranges:
-                    parameters.append([r_ball,random_speed_range])
-                    
-            t_start = tm.perf_counter()
-            with ft.ProcessPoolExecutor() as executor:
-                results = executor.map(run, parameters)
-            t_end = tm.perf_counter()
-            
-            print(f"Time elapsed: {round(t_end-t_start,1)}s")
-            for result in results:
-                pressures.append(result["average pressure"])
-                temperatures.append(result["average temperature"])
-                
-            list_b, list_V = np.zeros(len(r_balls)),  np.zeros(len(r_balls))
-            unc_b = np.zeros(len(r_balls))
-            
-            for i, r_ball in enumerate(r_balls):        # Data to plot b vs. V.
-                temperatures_cache, pressures_cache = [], []
-                for j, random_speed_range in enumerate(random_speed_ranges):
-                    temperatures_cache.append(temperatures[i*len(random_speed_ranges) + j])
-                    pressures_cache.append(pressures[i*len(random_speed_ranges) + j])
-                linear = sp.stats.linregress(temperatures_cache, pressures_cache)
-                
-                m, unc_m = linear.slope, linear.stderr  # Linear regression.
-                list_b[i], list_V[i] = calculate_b(volume, N_balls, m),\
-                                       np.pi * r_ball**2
-                unc_b[i] = calculate_unc_b(m, unc_m)
-                
-                guess_n, guess_A, guess_B = 0.5, 1, 0.5
-                p0_power_law = [guess_n, guess_A, guess_B]
-                fit_power_law = opt.curve_fit(power_law, list_V, list_b,
-                                              p0=p0_power_law, sigma=unc_b)
-                
-            
-            
-            
-            
-            
-            print("Plotting Graph 1 of 1")
-
-            plt.figure(num="Power Law of b and V")
-            sns.set(context="paper", style="darkgrid", palette="muted")
-
-            plt.plot(arr_fit, data_fit_power, label=legend_fit, lw=2, alpha=0.8)
-            plt.plot(arr_V, arr_b, "o", mew=0.5, mec="white")
-            plt.errorbar(arr_V, arr_b, yerr=err_b, fmt="none", color="black", capsize=3)
-
-            plt.title("Power Law Scaling of Ball Effective Area")
-            plt.xlabel(r"Area of 1 Ball $V_{ball}$ /$m^2$")
-            plt.ylabel(r"Effective Area of 1 Ball $b$ /$m^2$")
-            plt.legend()
-            plt.tight_layout()
-            plt.show()
